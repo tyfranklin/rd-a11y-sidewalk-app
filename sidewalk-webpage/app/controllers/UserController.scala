@@ -66,4 +66,14 @@ class UserController @Inject() (implicit val env: Environment[User, SessionAuthe
     env.eventBus.publish(LogoutEvent(request.identity, request, request2lang))
     request.authenticator.discard(result)
   }
+
+  /**
+   * Handles the stats2 page, with the user graph and the fog map
+   *
+   * @return The result to display.
+   */
+  def stats2 = SecuredAction.async { implicit request =>
+    var TaskController: controllers.TaskController = new controllers.TaskController() // Must be instantiated
+    Future.successful(Ok(views.html.stats2(request.identity, TaskController.completedLogic(request.identity))))
+  } 
 }

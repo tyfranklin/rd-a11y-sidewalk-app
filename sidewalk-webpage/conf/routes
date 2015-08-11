@@ -16,7 +16,7 @@ GET     /signOut                    @controllers.UserController.signOut(url: Str
 POST    /authenticate/credentials   @controllers.CredentialsAuthController.authenticate(url: String ?= "/")
 POST    /signUp                     @controllers.SignUpController.signUp(url: String ?= "/")
 
-
+GET     /stats2                     @controllers.UserController.stats2
 
 # Postgres
 # GET     /users                      controllers.UsersController.index

@@ -1,0 +1,205 @@
+@(user: models.User, data: play.api.libs.json.JsObject)
+
+@import com.mohiva.play.silhouette.impl.providers._
+@import views.html.bootstrap._
+@import forms.SignInForm
+
+@import play.api.Play
+@import play.api.Play.current
+
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>stats2 FIXME</title>
+	<head>
+		<!-- Copied from old page -->
+		<link rel="icon" type="image/png" href='@routes.Assets.at("images/favicon.png")'>
+		<link href='@routes.Assets.at("stylesheets/bootstrap/bootstrap.min.css")' rel='stylesheet' />
+		<link href='@routes.Assets.at("stylesheets/bootstrap/bootstrap-accessibility.css")' rel='stylesheet' />
+
+
+		<script src='@routes.Assets.at("javascripts/lib/bootstrap-accessibility-plugin/bs3.1.1/js/jquery.min.js")'></script>
+		<script src='@routes.Assets.at("javascripts/lib/bootstrap-accessibility-plugin/bs3.1.1/js/bootstrap.min.js")'></script>
+		<script src='@routes.Assets.at("javascripts/lib/bootstrap-accessibility-plugin/plugins/js/bootstrap-accessibility.min.js")'></script>
+
+		<!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />-->
+		<!--<script src="lib/jquery-1.7.2.min.js"></script>-->
+		<script src='@routes.Assets.at("javascripts/lib/js.cookie.js")'></script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyDzYR4m-3upEQ-bIQam35ixN1BgxnPsY7k&sensor=false"></script>
+
+		<link href='@routes.Assets.at("stylesheets/fonts.css")' rel="stylesheet"/>
+		<link href='@routes.Assets.at("stylesheets/mapbox.css")' rel='stylesheet' />
+		<link href='@routes.Assets.at("stylesheets/main.css")' rel="stylesheet"/>
+		<!-- End copy -->
+		<script src='@routes.Assets.at("javascripts/lib/d3.v3.js")'></script>
+		<script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js" charset="utf-8"></script>
+		<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" />
+		<script src='@routes.Assets.at("javascripts/lib/jsts/javascript.util.min.js")'></script>
+		<script src='@routes.Assets.at("javascripts/lib/jsts/jsts.min.js")'></script>
+		<script src='@routes.Assets.at("javascripts/lib/bootstrap-accessibility-plugin/bs3.1.1/js/jquery.min.js")'></script>
+		<style>
+			@@font-face {
+				font-family: HelveticaNeueUltraLight;
+				src: url('@routes.Assets.at("fonts/HelveticaNeue-UltraLight.otf")') format("opentype");
+			}
+			body {
+				font-family: HelveticaNeueUltraLight, sans-serif;
+				letter-spacing: 1px;
+			}
+			svg {
+				letter-spacing: 0px;
+			}
+			h2 {
+				font-weight: bold;
+				margin: 0px;
+			}
+			#map {
+				position:absolute;
+				top:0;
+				left:0;
+				bottom:50%;
+				width:100%;
+			}
+			.block {
+				display: inline-block;
+				width: 20%;
+				font-size: 3em;
+			}
+			.block img { 
+				/*height: 30px;*/
+			}
+			.squares3 {
+				filter: url(#picture_filter);
+			}
+			#loading {
+				position: absolute;
+				bottom: 51%;
+				right: 20%;
+				font-size: 2em;
+			}
+			.FeaturePopup {
+				width: 600px;
+				font-family: "Open Sans", "Oxygen", sans-serif;
+				letter-spacing: 0px;
+			}
+		</style>
+		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+		<script src='@routes.Assets.at("javascripts/lib/mapbox.js")'></script>
+		<script src='@routes.Assets.at("javascripts/Progress/Streets_personal.js")'></script>
+		<script src='@routes.Assets.at("javascripts/Progress/Core.js")'></script>
+		<script>
+			var load = function(id, type, ziptype) {
+				str = "#feature-".concat(id.toString());
+				if (type === "MultiPolygon" || type === "Polygon") {
+					$.get("/audit_stats/area_percent/".concat(ziptype,"/",id), function(data) { 
+						$(str).html(data.trim().concat("% audited."));
+					});
+				} else {
+					$.get("/audit_stats/total_audits/".concat(id), function(data) { 
+						if (data.trim() == "1") {
+						  var plural = "day";
+						} else {
+						  var plural = "days";
+						}
+						$(str).html("You audited this way ".concat(data, " ", plural, " ago. Id: ", id));
+					});
+				}
+			};
+			var Progress.data = @Html(data.toString());
+		</script>
+		<script>
+			function my_labels_graph() {
+				$.getJSON("/audit_stats/graph/activity", function(activity_data) {
+					activity_datum = [
+						{
+							key: "test",
+							values: activity_data,
+							color: "#0000ff"
+						}
+					];
+					nv.addGraph(function() {
+						var chart = nv.models.discreteBarChart();
+						chart.tooltip.enabled(true);
+						chart.tooltip.contentGenerator(function (key, x, y, e, graph) {
+							if (key.data.y == 1) {
+								var plural = "audit";
+							} else {
+								var plural = "audits";
+							}
+							return key.data.x + " - " + key.data.y + " " + plural;
+						});
+						chart.showXAxis(false);
+						chart.color(["#E58755"]);
+						chart.yAxis
+							.axisLabel("Audits")
+							.tickFormat(d3.format(',.0f')); // Do not show decimal points
+						d3.select("#activity_chart svg")
+							.datum(activity_datum)
+							.transition().duration(500).call(chart);
+						nv.utils.windowResize(function() {
+							chart.update();
+						});
+					});
+				});
+				$.getJSON("/audit_stats/graph/my_labels", function(my_labels_data) {
+					$("#curb_ramps_num").html(my_labels_data[1][1])
+					$("#missing_curb_ramps_num").html(my_labels_data[2][1])
+					$("#obstacles_num").html(my_labels_data[3][1])
+					$("#surface_problems_num").html(my_labels_data[4][1])
+				});
+			}
+			$(document).ready(function() {
+				my_labels_graph();
+				Progress.core.init();
+			});
+		</script>
+	</head>
+	<body>
+		<svg><filter id="picture_filter"><feGaussianBlur stdDeviation="15" /></filter></svg>
+		<div id="map"></div>
+		<div id="loading" style="z-index: 100;">
+			<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
+			Loading map... Please wait
+		</div>
+		<div style="width: 90%; margin-left: 5%; top: 50%; position: absolute;">
+			<h1>Labels</h1>
+			<div id="block_container">
+				<div class="block">
+					<img src='@routes.Assets.at("/images/StatusPage_v1b-003.png")' />
+					<span id="curb_ramps_num">
+						<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
+					</span>
+				</div>
+				<div class="block">
+					<img src='@routes.Assets.at("/images/StatusPage_v1b-004.png")' />
+					<span id="missing_curb_ramps_num">
+						<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
+					</span>
+				</div>
+				<div class="block">
+					<img src='@routes.Assets.at("/images/StatusPage_v1b-005.png")' />
+					<span id="obstacles_num">
+						<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
+					</span>
+				</div>
+				<div class="block">
+					<img src='@routes.Assets.at("/images/StatusPage_v1b-006.png")' />
+					<span id="surface_problems_num">
+						<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
+					</span>
+				</div>
+			</div>
+			<h1>Activities</h1>
+			<div id="activity_chart">
+				<svg style="height:20%; width: 95%;" />
+			</div>
+		</div>
+		<footer class="footer">
+			<div class="container">
+				<p class="text-muted footer-text">Project Sidewalk is operated by Makeability Lab at the University of Maryland, College Park.</p>
+			</div>
+		</footer>
+	</body>
+</html>
+
