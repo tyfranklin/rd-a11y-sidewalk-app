@@ -30,7 +30,7 @@ function uniq_fast(a) {
 }
 Progress.streets = (function Streets($, L) {
 	var self = {};
-	function _init() {
+	function _init(data) {
 		// Styling: http://leafletjs.com/examples/geojson.html
 		// http://leafletjs.com/reference.html#path-dasharray
 		// https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray
@@ -42,7 +42,7 @@ Progress.streets = (function Streets($, L) {
 		}
 		// Because javascript is so bad, these have to be predefined, you can't just add "var " to the declarations below or it will define them in a local scope and they won't be accessible from the zoomend hook.
 		var streetmap = "test";
-		var data = Progress.data;
+
 		streetmap = L.geoJson(data, {
 			pointToLayer: L.mapbox.marker.style,
 			style: function(feature) {
@@ -119,7 +119,6 @@ Progress.streets = (function Streets($, L) {
 			} catch(e) {console.log(e)};
 		}
 		var squares2 = parser.write(base);
-		console.log(squares2);
 		if (squares2.type == "Polygon") {
 			squares2.coordinates.push([
 				[
@@ -145,20 +144,35 @@ Progress.streets = (function Streets($, L) {
 			]);
 			var squares3 = {
 				"type": "FeatureCollection",
-				"features": [squares2]
+				"features": [
+					{
+						"type": "Feature",
+						"properties": {},
+						"geometry": {
+							"type": "Polygon",
+							"coordinates": [squares2]
+						}
+					}
+				]
 			};
 		} else {
 			var squares3 = {
 				"type": "FeatureCollection",
-				"features": [{
-					"type": "Polygon",
-					"coordinates": []
-				}]
+				"features": [
+					{
+						"type": "Feature",
+						"properties": {"stroke-width": 5, "stroke": "#ff0000"},
+						"geometry": {
+							"type": "Polygon",
+							"coordinates": []
+						}
+					}
+				]
 			};
 			for (var i = 0; i < squares2.coordinates.length; i++) {
-				squares3.features[0].coordinates.push(squares2.coordinates[i][0]);
+				squares3.features[0].geometry.coordinates.push(squares2.coordinates[i][0]);
 			}
-			squares3.features[0].coordinates.push([
+			squares3.features[0].geometry.coordinates.push([
 				[
 					180,
 					-180
@@ -181,21 +195,18 @@ Progress.streets = (function Streets($, L) {
 				]
 			]);
 		}
+		L.geoJson(squares3.features[0]).addTo(Progress.map);
 		console.log(JSON.stringify(squares3, null));
 		L.geoJson(squares3, {
 			style: function(feature) {
 				return {fillColor: "#000000", fillOpacity: 0.5, clickable: false, lineJoin: "round", className: "squares3", color: "#000000"};
 			}
-		}).addTo(Progress.map);
+		})
+		.addTo(Progress.map);
 		$("#loading").html("");
-		/*})
-		.fail(function (result) {
-			$("#loading").html("Fatal error. ".concat(JSON.stringify(result, null)));
-			console.log("Failed on: ", result);
-		});*/
 	}
 	// Public methods
 	self.init = _init;
 	return self;
-}($, L))
+}($, L));
 

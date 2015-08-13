@@ -105,7 +105,7 @@
 					});
 				}
 			};
-			var Progress.data = @Html(data.toString());
+			var data2 = @Html(data.toString());
 		</script>
 		<script>
 			function my_labels_graph() {
@@ -149,14 +149,14 @@
 				});
 			}
 			$(document).ready(function() {
-				my_labels_graph();
-				Progress.core.init();
+				//my_labels_graph();
+				Progress.core.init(data2);
 			});
 		</script>
 	</head>
 	<body>
 		<svg><filter id="picture_filter"><feGaussianBlur stdDeviation="15" /></filter></svg>
-		<div id="map"></div>
+		<div id="map" style="box-sizing: default !important; height: 50% !important"></div> <!-- For some reason, leaflet likes to override box-sizing, meaning #map can only have absolute dimensions. Not cool, leaflet. -->
 		<div id="loading" style="z-index: 100;">
 			<img src='@routes.Assets.at("/images/ajax-loader.gif")' />
 			Loading map... Please wait
