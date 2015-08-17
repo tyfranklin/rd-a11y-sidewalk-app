@@ -161,7 +161,7 @@ Progress.streets = (function Streets($, L) {
 				"features": [
 					{
 						"type": "Feature",
-						"properties": {"stroke-width": 5, "stroke": "#ff0000"},
+						"properties": {"stroke-width": 0, "stroke": "#000000"},
 						"geometry": {
 							"type": "Polygon",
 							"coordinates": []
