@@ -1,0 +1,205 @@
+@btn-color: #46c0ff;
+@dark-text: #3c424f;
+
+.landing-page {
+
+  .participate-btn {
+    background-color: @btn-color;
+    color: white;
+    border-radius: 3px;
+    box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-top: 130px;
+    padding: 15px 60px 17px;
+    transition: 0.5s;
+    font-size: 18px;
+    display: inline-block;
+    cursor: pointer;
+
+    &:hover {
+      background-color: lighten(@btn-color, 10%);
+      text-decoration: none;
+    }
+  }
+
+  .landing-carousel {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+    min-width: 1000px;
+
+    div.items div {
+      width: 100%;
+      img {
+        width: 100%;
+        min-height: 600px;
+      }
+    }
+    .overlay {
+      background-color: rgba(51, 83, 106, 0.9);
+      //background-color: rgba(161, 161, 161, 0.9);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      text-align: center;
+      padding-top: 130px;
+      color: white;
+
+      h1 {
+        font-weight: normal;
+      }
+      .icons {
+        margin-top: 40px;
+      }
+    }
+  }
+
+  //Override slick
+  .slick-slide {
+    height: auto !important;
+  }
+
+  .section {
+    padding: 100px 0;
+    border-bottom: 2px solid #eee;
+
+    h2 {
+      text-align: center;
+      color: @dark-text;
+      margin-top: 0 !important;
+
+      &:after {
+        width: 50px;
+        height: 2px;
+        background-color: #bcc5c8;
+        content: " ";
+        display: block;
+        margin: 10px auto 50px;
+      }
+    }
+
+    p {
+      font-size: 16px;
+      margin-bottom: -20px;
+      color: @dark-text;
+      font-weight: 400;
+    }
+
+    &.what-you-do {
+      text-align: center;
+
+      .gif {
+        background-color: #eee;
+        width: 800px;
+        height: 450px;
+        margin: auto;
+        border-radius: 3px;
+        margin-bottom: 30px;
+      }
+      p {
+        margin-bottom: -20px;
+      }
+    }
+
+    &.scalability {
+      background-color: #f8fafb;
+
+      p {
+        width: 400px;
+      }
+
+      .content {
+        .left{
+          float: left;
+          width: 50%;
+          text-align: right;
+          padding-right: 40px;
+
+          img {
+            width: 340px;
+          }
+        }
+        .right {
+          float: left;
+          width: 50%;
+          text-align: left;
+          padding-left: 40px;
+
+          p {
+            margin-top: 30px;
+
+            a {
+              margin-top: 20px;
+              display:block;
+            }
+          }
+        }
+      }
+    }
+
+    &.applications {
+      .content {
+        padding: 0 100px;
+        .left, .middle, .right {
+          width: 33%;
+          float: left;
+          text-align: center;
+          padding: 20px;
+
+          a {
+            display: block;
+            margin-top: 20px;
+          }
+        }
+
+        img {
+          width: 200px;
+        }
+      }
+    }
+
+    &.joinus {
+      background-color: #f8fafb;
+      text-align: center;
+
+      .stats {
+        margin: 60px auto 0;
+        width: 600px;
+
+        .item {
+          width: 33%;
+          float: left;
+          text-align: center;
+
+          .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: @dark-text;
+          }
+
+          .caption {
+            font-size: 16px;
+          }
+        }
+      }
+      .participate-btn {
+        margin-top: 70px !important;
+      }
+    }
+  }
+}
+
+
+nav {
+  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+}
