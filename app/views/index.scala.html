@@ -7,6 +7,7 @@
     @navbar(user)
     <link href='@routes.Assets.at("stylesheets/lib/slick.css")' rel="stylesheet"/>
     <script src='@routes.Assets.at("javascripts/lib/slick.min.js")'></script>
+    <script src='@routes.Assets.at("javascripts/lib/isInViewport.min.js")'></script>
 
     <!-- todo: decide whether to use lesscss or not -->
     <link href='@routes.Assets.at("stylesheets/index.less")' rel="stylesheet/less" type="text/css"/>
@@ -21,27 +22,28 @@
         <div class="landing-carousel">
             <div class="items">
                 <div>
-                    <img src='@routes.Assets.at("images/landing_page/carousel-1.png")' />
+                    <img src='@routes.Assets.at("images/landing-page/carousel-1.png")' />
                 </div>
                 <div>
-                    <img src='@routes.Assets.at("images/landing_page/carousel-2.png")' />
+                    <img src='@routes.Assets.at("images/landing-page/carousel-2.png")' />
                 </div>
             </div>
             <div class="overlay"></div>
             <div class="content">
                 <h1>Help us make sidewalks more accessible. For everyone.</h1>
                 <div class="icons">
-                    <img src='@routes.Assets.at("images/landing_page/people.svg")' alt="Icons of wheelchair user, cane user, scooter user, and a person with a stroller" class="header-icon img-responsive center-block" align="">
+                    <img src='@routes.Assets.at("images/landing-page/people.svg")' alt="Icons of wheelchair user, cane user, scooter user, and a person with a stroller" class="header-icon img-responsive center-block" align="">
                 </div>
                 <a href='@routes.AuditController.audit' class="participate-btn">Participate</a>
             </div>
         </div>
 
         <div class="section what-you-do">
-            <div class="gif">
-
-            </div>
-            <p>You can virtually walk through city streets and mark accessibility attributes.</p>
+            <h2>
+                What You Can Do
+            </h2>
+            <video class="gif" src='@routes.Assets.at("videos/landing-page/what-you-do.mp4")' controls></video>
+            @*<p>You can virtually walk through city streets and mark accessibility attributes.</p>*@
         </div>
 
         <div class="section scalability">
@@ -50,7 +52,7 @@
             </h2>
             <div class="content">
                 <div class="left">
-                    <img src='@routes.Assets.at("images/landing_page/scalibility.svg")' alt="scalability illustration" class="" align="">
+                    <img src='@routes.Assets.at("images/landing-page/scalibility.svg")' alt="scalability illustration" class="" align="">
                 </div>
                 <div class="right">
                     <p>
@@ -72,7 +74,7 @@
             </h2>
             <div class="content">
                 <div class="left">
-                    <img src='@routes.Assets.at("images/landing_page/applications-routeassist.svg")' alt="scalability illustration" class="" align="">
+                    <img src='@routes.Assets.at("images/landing-page/applications-routeassist.svg")' alt="scalability illustration" class="" align="">
                     <p>
                         Personalized routing algorithms based on a user's mobility level.
 
@@ -82,7 +84,7 @@
                     </p>
                 </div>
                 <div class="middle">
-                    <img src='@routes.Assets.at("images/landing_page/applications-interactivemap.svg")' alt="scalability illustration" class="" align="">
+                    <img src='@routes.Assets.at("images/landing-page/applications-interactivemap.svg")' alt="scalability illustration" class="" align="">
                     <p>
                         Interactive maps, to show accessibility features of an area.
 
@@ -92,7 +94,7 @@
                     </p>
                 </div>
                 <div class="right">
-                    <img src='@routes.Assets.at("images/landing_page/applications-api.svg")' alt="scalability illustration" class="" align="">
+                    <img src='@routes.Assets.at("images/landing-page/applications-api.svg")' alt="scalability illustration" class="" align="">
                     <p>
                         And lot’s of other possibilities with Sidewalk’s open API.
 
@@ -140,19 +142,29 @@
     </div>
 
     <script>
-            $(document).ready(function() {
-                $('.landing-carousel .items').slick({
-                    dots: true,
-                    infinite: true,
-                    speed: 500,
-                    fade: true,
-                    cssEase: 'linear',
-                    autoplay: true,
-                    autoplaySpeed: 5000,
-                    arrows: false,
-                    dots: false,
+        $(document).ready(function() {
+            $('.landing-carousel .items').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                fade: true,
+                cssEase: 'linear',
+                autoplay: true,
+                autoplaySpeed: 5000,
+                arrows: false,
+                dots: false,
 
-                });
             });
+        });
+
+        $(window).scroll(function() {
+            $('video').each(function(){
+                if ($(this).is(":in-viewport")) {
+                    $(this)[0].play();
+                } else {
+                    $(this)[0].pause();
+                }
+            })
+        });
     </script>
 }

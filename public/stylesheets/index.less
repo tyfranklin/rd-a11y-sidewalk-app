@@ -98,14 +98,21 @@
     &.what-you-do {
       text-align: center;
 
-      .gif {
+      video {
         background-color: #eee;
         width: 800px;
-        height: 450px;
-        margin: auto;
+        margin: auto auto 30px;
         border-radius: 3px;
-        margin-bottom: 30px;
+        cursor: pointer;
+        position: relative;
+        transition: 1s;
+
+        &.not-playing {
+          opacity: 0.2;
+          background-color: black;
+        }
       }
+
       p {
         margin-bottom: -20px;
       }
