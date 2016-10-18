@@ -1,0 +1,104 @@
+@import models.user.User
+@(title: String, user: Option[User] = None)
+
+@main(title) {
+    @navbar(user)
+    <link rel="stylesheet/less" type="text/css" href='@routes.Assets.at("stylesheets/release.less")'/>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.7.1/less.min.js"></script>
+
+    <div class="releaseNotes container">
+        <div class="release" id="1.5.3">
+            <h2>
+                <span class="version">1.0.15</span>
+                <span class="date">Tue 18 Oct</span>
+            </h2>
+
+            <p class="desc">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Sed suscipit ornare odio, id vestibulum metus feugiat ac.
+            </p>
+
+            <div class="group-list">
+                <aside>
+                    <span class="label features">New Features</span>
+                </aside>
+                <article>
+                    <ul>
+                        <li>
+                            <strong>Touchscreen support:</strong>
+                            Our audit tool now supports touchscreen devices.
+                        </li>
+                    </ul>
+                </article>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="group-list">
+                <aside>
+                    <span class="label bug-fixes">Bug Fixes</span>
+                </aside>
+                <article>
+                    <ul>
+                        <li>
+                            <strong>Cross Browser Compatibility:</strong>
+                            Some minor problems in Firefox and Safari are now fixed.
+                        </li>
+                        <li>
+                            <strong>Users' Count:</strong>
+                            Some minor problems in Firefox and Safari are now fixed.
+                        </li>
+                    </ul>
+                </article>
+                <div class="clearfix"></div>
+            </div>
+
+        </div>
+
+        <div class="release" id="1.5.3">
+            <h2>
+                <span class="version">1.0.14</span>
+                <span class="date">Tue 18 Oct</span>
+            </h2>
+
+            <p class="desc">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Sed suscipit ornare odio, id vestibulum metus feugiat ac.
+            </p>
+
+            <div class="group-list">
+                <aside>
+                    <span class="label features">New Features</span>
+                </aside>
+                <article>
+                    <ul>
+                        <li>
+                            <strong>Touchscreen support:</strong>
+                            Our audit tool now supports touchscreen devices.
+                        </li>
+                    </ul>
+                </article>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="group-list">
+                <aside>
+                    <span class="label bug-fixes">Bug Fixes</span>
+                </aside>
+                <article>
+                    <ul>
+                        <li>
+                            <strong>Cross Browser Compatibility:</strong>
+                            Some minor problems in Firefox and Safari are now fixed.
+                        </li>
+                        <li>
+                            <strong>Users' Count:</strong>
+                            Some minor problems in Firefox and Safari are now fixed.
+                        </li>
+                    </ul>
+                </article>
+                <div class="clearfix"></div>
+            </div>
+
+        </div>
+    </div>
+}
