@@ -38,10 +38,10 @@ class ApplicationController @Inject() (implicit val env: Environment[User, Sessi
     request.identity match {
       case Some(user) =>
         WebpageActivityTable.save(WebpageActivity(0, user.userId.toString, ipAddress, "Visit_Index", timestamp))
-        Future.successful(Ok(views.html.index("Project Sidewalk", Some(user))))
+        Future.successful(Ok(views.html.pageDown("Project Sidewalk - Under Maintenance", Some(user))))
       case None =>
         WebpageActivityTable.save(WebpageActivity(0, anonymousUser.userId.toString, ipAddress, "Visit_Index", timestamp))
-        Future.successful(Ok(views.html.index("Project Sidewalk")))
+        Future.successful(Ok(views.html.pageDown("Project Sidewalk - Under Maintenance")))
     }
   }
 

@@ -1,0 +1,23 @@
+@import models.daos.slick.DBTableDefinitions.UserTable
+@import models.user.User
+@import models.daos._
+@import models.street.StreetEdgeTable
+@(title: String, user: Option[User] = None)
+
+@main(title) {
+    <div class="container">
+        <div class="spacer30"></div>
+        <div class="spacer30"></div>
+        <div class="spacer30"></div>
+        <div class="spacer30"></div>
+        <div class="row">
+            <div style="text-align:center">
+                <h2 >Project Sidewalk is Down for Maintenance</h2>
+                <div class="spacer30"></div>
+                <p>
+                    ...and it will be up and running soon.
+                </p>
+            </div>
+        </div>
+    </div>
+}
