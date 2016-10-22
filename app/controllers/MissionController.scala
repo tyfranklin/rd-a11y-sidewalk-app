@@ -17,6 +17,7 @@ import play.api.mvc.BodyParsers
 
 import scala.concurrent.Future
 
+import play.api.{Logger, Play}
 
 class MissionController @Inject() (implicit val env: Environment[User, SessionAuthenticator])
   extends Silhouette[User, SessionAuthenticator] with ProvidesHeader {
@@ -116,6 +117,13 @@ class MissionController @Inject() (implicit val env: Environment[User, SessionAu
   def updatedUnmarkedCompletedMissionsAsCompleted(userId: UUID, regionId: Int): Unit = {
     val missions = MissionTable.selectIncompleteMissionsByAUser(userId, regionId)
     val streets = StreetEdgeTable.selectStreetsAuditedByAUser(userId, regionId)
+
+    val factories = CRS.getAuthorityFactory(false)
+    Logger.info(factories.toString)
+    //val engCrs = factories.createEngineeringCRS("epsg:4326")
+    //Logger.info(engCrs.toString)
+
+
     val CRSEpsg4326 = CRS.decode("epsg:4326")
     val CRSEpsg26918 = CRS.decode("epsg:26918")
     val transform = CRS.findMathTransform(CRSEpsg4326, CRSEpsg26918)

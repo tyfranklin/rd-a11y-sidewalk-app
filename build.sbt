@@ -4,7 +4,7 @@ import scalariform.formatter.preferences._
 
 name := """sidewalk-webpage"""
 
-version := "1.0.16"
+version := "1.0.16-test"
 
 scalaVersion := "2.10.4"
 
@@ -25,6 +25,9 @@ libraryDependencies ++= Seq(
   jdbc,
   anorm,
   cache,
+  "org.geotools" % "gt-main" % "14.3",
+  "org.geotools" % "gt-referencing" % "14.3",
+  "org.geotools" % "gt-epsg-hsql" % "14.3",
   "com.vividsolutions" % "jts" % "1.13",
   "com.typesafe.slick" %% "slick" % "2.1.0",
   "com.typesafe.play" %% "play-slick" % "0.8.0",
@@ -40,12 +43,7 @@ libraryDependencies ++= Seq(
   "com.github.tminglei" %% "slick-pg" % "0.8.2",
   "org.slf4j" % "slf4j-api"       % "1.7.7",
   "org.slf4j" % "jcl-over-slf4j"  % "1.7.7",
-  "joda-time" % "joda-time" % "2.9.4",
-  // "org.geotools" % "gt-coverage" % "14.3",
-  "org.geotools" % "gt-epsg-hsql" % "14.3",
-  // "org.geotools" % "gt-geotiff" % "14.3",
-  "org.geotools" % "gt-main" % "14.3",
-  "org.geotools" % "gt-referencing" % "14.3"
+  "joda-time" % "joda-time" % "2.9.4"
 ).map(_.force())
 
 libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-jdk14")) }
