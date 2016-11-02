@@ -46,6 +46,38 @@ class AdminController @Inject() (implicit val env: Environment[User, SessionAuth
     }
   }
 
+  def analytics = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      Future.successful(Ok(views.html.admin.analytics("Project Sidewalk", request.identity)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+
+  def contributions = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      Future.successful(Ok(views.html.admin.contributions("Project Sidewalk", request.identity)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+
+  def users = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      Future.successful(Ok(views.html.admin.users("Project Sidewalk", request.identity)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+
+  def comments = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      Future.successful(Ok(views.html.admin.comments("Project Sidewalk", request.identity)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+
   def userProfile(username: String) = UserAwareAction.async { implicit request =>
     if (isAdmin(request.identity)) {
       UserTable.find(username) match {

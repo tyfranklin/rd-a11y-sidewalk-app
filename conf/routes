@@ -23,6 +23,12 @@ POST    /signUp                                 @controllers.SignUpController.si
 
 # Admin
 GET     /admin                                  @controllers.AdminController.index
+GET     /admin/analytics                        @controllers.AdminController.analytics
+GET     /admin/contributions                    @controllers.AdminController.contributions
+GET     /admin/users                            @controllers.AdminController.users
+GET     /admin/comments                         @controllers.AdminController.comments
+
+
 GET     /admin/user/:username                   @controllers.AdminController.userProfile(username: String)
 GET     /admin/task/:taskId                     @controllers.AdminController.task(taskId: Int)
 
