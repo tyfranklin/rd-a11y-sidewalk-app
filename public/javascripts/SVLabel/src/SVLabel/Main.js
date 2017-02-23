@@ -103,10 +103,25 @@ function Main (params) {
         svl.labelContainer = new LabelContainer($);
         svl.panoramaContainer = new PanoramaContainer(svl.streetViewService);
 
+
+
         svl.overlayMessageBox = new OverlayMessageBox(svl.modalModel, svl.ui.overlayMessage);
         svl.ribbon = new RibbonMenu(svl.overlayMessageBox, svl.tracker, svl.ui.ribbonMenu);
         svl.canvas = new Canvas(svl.ribbon);
-        svl.form = new Form(svl.labelContainer, svl.missionModel, svl.navigationModel, svl.neighborhoodModel, svl.panoramaContainer, svl.taskContainer, svl.tracker, params.form);
+
+
+        // Set map parameters and instantiate it.
+        var mapParam = { Lat: SVLat, Lng: SVLng, panoramaPov: { heading: 0, pitch: -10, zoom: 1 }, taskPanoId: panoId};
+        svl.map = new MapService(svl.canvas, svl.neighborhoodModel, svl.ui.map, mapParam);
+        svl.map.disableClickZoom();
+        svl.compass = new Compass(svl, svl.map, svl.taskContainer, svl.ui.compass);
+        svl.alert = new Alert();
+        svl.keyboardShortcutAlert = new KeyboardShortcutAlert(svl.alert);
+        svl.jumpModel = new JumpModel();
+        svl.jumpAlert = new JumpAlert(svl.alert, svl.jumpModel);
+        svl.navigationModel._mapService = svl.map;
+
+        svl.form = new Form(svl.labelContainer, svl.missionModel, svl.navigationModel, svl.neighborhoodModel, svl.panoramaContainer, svl.taskContainer, svl.map, svl.compass, svl.tracker, params.form);
         svl.statusField = new StatusField(svl.ui.status);
         svl.statusFieldNeighborhood = new StatusFieldNeighborhood(svl.neighborhoodModel, svl.statusModel, svl.userModel, svl.ui.status);
         svl.statusFieldMissionProgressBar = new StatusFieldMissionProgressBar(svl.modalModel, svl.statusModel, svl.ui.status);
@@ -122,7 +137,7 @@ function Main (params) {
         svl.contextMenu = new ContextMenu(svl.ui.contextMenu);
 
         // Game effects
-        svl.audioEffect = new AudioEffect(svl.gameEffectModel, svl.ui.leftColumn, svl.rootDirectory);
+        svl.audioEffect = new AudioEffect(svl.gameEffectModel, svl.ui.leftColumn, svl.rootDirectory, svl.storage);
         svl.completionMessage = new CompletionMessage(svl.gameEffectModel, svl.ui.task);
 
 
@@ -162,15 +177,9 @@ function Main (params) {
         svl.modalSkip = new ModalSkip(svl.form, svl.modalModel, svl.navigationModel, svl.onboardingModel, svl.ribbon, svl.taskContainer, svl.tracker, svl.ui.leftColumn, svl.ui.modalSkip);
         svl.modalExample = new ModalExample(svl.modalModel, svl.onboardingModel, svl.ui.modalExample);
 
-        // Set map parameters and instantiate it.
-        var mapParam = { Lat: SVLat, Lng: SVLng, panoramaPov: { heading: 0, pitch: -10, zoom: 1 }, taskPanoId: panoId};
-        svl.map = new MapService(svl.canvas, svl.neighborhoodModel, svl.ui.map, mapParam);
-        svl.map.disableClickZoom();
-        svl.compass = new Compass(svl, svl.map, svl.taskContainer, svl.ui.compass);
-        svl.navigationModel._mapService = svl.map;
 
         svl.zoomControl = new ZoomControl(svl.canvas, svl.map, svl.tracker, svl.ui.zoomControl);
-        svl.keyboard = new Keyboard(svl, svl.canvas, svl.contextMenu, svl.ribbon, svl.zoomControl);
+        svl.keyboard = new Keyboard(svl, svl.canvas, svl.contextMenu, svl.map, svl.ribbon, svl.zoomControl);
 
         loadData(neighborhood, svl.taskContainer, svl.missionModel, svl.neighborhoodModel);
 
@@ -192,6 +201,33 @@ function Main (params) {
         $("#toolbar-onboarding-link").on('click', function () {
             startOnboarding();
         });
+
+        $(svl.ui.ribbonMenu.buttons).each(function() {
+            var val = $(this).attr('val');
+
+            if(val != 'Walk' && val != 'Other') {
+                $(this).attr({
+                    'data-toggle': 'tooltip',
+                    'data-placement': 'top',
+                    'title': 'Press the "' + util.misc.getLabelDescriptions(val)['shortcut']['keyChar'] + '" key'
+                });
+            }
+        });
+
+        $(svl.ui.ribbonMenu.subcategories).each(function() {
+            var val = $(this).attr('val');
+
+            if(val != 'Walk' && val != 'Other') {
+                $(this).attr({
+                    'data-toggle': 'tooltip',
+                    'data-placement': 'left',
+                    'title': 'Press the "' + util.misc.getLabelDescriptions(val)['shortcut']['keyChar'] + '" key'
+                });
+            }
+        });
+        $('[data-toggle="tooltip"]').tooltip({
+            delay: { "show": 500, "hide": 100 }
+        })
     }
 
     function loadData (neighborhood, taskContainer, missionModel, neighborhoodModel) {
@@ -305,9 +341,40 @@ function Main (params) {
             svl.statusFieldNeighborhood.setLabelCount(count);
         });
 
+        svl.labelContainer.fetchLabelsInTheCurrentMission(
+            neighborhood.getProperty("regionId"),
+            function (result) {
+                var counter = {"CurbRamp": 0, "NoCurbRamp": 0, "Obstacle": 0, "SurfaceProblem": 0, "Other": 0};
+                for (var i = 0, len = result.length; i < len; i++) {
+                    switch (result[i].label_type_id) {
+                        case 1:
+                            counter['CurbRamp'] += 1;
+                            break;
+                        case 2:
+                            counter['NoCurbRamp'] += 1;
+                            break;
+                        case 3:
+                            counter['Obstacle'] += 1;
+                            break;
+                        case 4:
+                            counter['SurfaceProblem'] += 1;
+                            break;
+                        default:
+                            counter['Other'] += 1;
+                    }
+                }
+                svl.labelCounter.set('CurbRamp', counter['CurbRamp']);
+                svl.labelCounter.set('NoCurbRamp', counter['NoCurbRamp']);
+                svl.labelCounter.set('Obstacle', counter['Obstacle']);
+                svl.labelCounter.set('SurfaceProblem', counter['SurfaceProblem']);
+                svl.labelCounter.set('Other', counter['Other']);
+            });
+
         var unit = "miles";
         var distance = svl.taskContainer.getCompletedTaskDistance(neighborhood.getProperty("regionId"), unit);
         svl.statusFieldNeighborhood.setAuditedDistance(distance.toFixed(1), unit);
+
+
     }
 
     // This is a callback function that is executed after every loading process is done.
@@ -329,12 +396,39 @@ function Main (params) {
                     onboardingMission.setProperty("isCompleted", true);
                     svl.missionModel.completeMission(onboardingMission, null);
                 }
-
                 mission = selectTheMission(currentNeighborhood); // Neighborhood changing side-effect in selectTheMission
+                _calculateAndSetTasksMissionsOffset();
                 currentNeighborhood = svl.neighborhoodContainer.getStatus("currentNeighborhood");
                 svl.missionContainer.setCurrentMission(mission);
                 startTheMission(mission, currentNeighborhood);
             }
+        }
+    }
+
+    function _calculateAndSetTasksMissionsOffset() {
+        var neighborhoodId = svl.neighborhoodContainer.getCurrentNeighborhood().getProperty("regionId");
+
+        var completedTasksDistance = svl.taskContainer.getCompletedTaskDistance(neighborhoodId);
+
+        var missions = svl.missionContainer.getMissionsByRegionId(neighborhoodId);
+        var completedMissions = missions.filter(function (m) { return m.isCompleted(); });
+
+        var completedMissionsDistance = 0;
+
+        if(completedMissions.length > 0)
+            completedMissionsDistance = completedMissions[completedMissions.length - 1].getProperty("distance") / 1000;
+
+        if(completedMissionsDistance > completedTasksDistance) {
+            /*
+            In this case the user has audited part of a street to complete a mission, then refreshed the browser
+            and the audited street is not saved.
+             */
+            svl.missionContainer.setTasksMissionsOffset(completedMissionsDistance - completedTasksDistance);
+        } else {
+            /*
+            In this case we don't need to store any offset
+             */
+            svl.missionContainer.setTasksMissionsOffset(0);
         }
     }
 
@@ -352,15 +446,7 @@ function Main (params) {
             svl.neighborhoodModel.setCurrentNeighborhood(currentNeighborhood);
             availableMissions = svl.missionContainer.getMissionsByRegionId(regionId);
             availableMissions = availableMissions.filter(function (m) { return !m.isCompleted(); });
-            var newTask = svl.taskContainer.nextTask();
-            if (!newTask) {
-                var currentNeighborhood = svl.neighborhoodModel.currentNeighborhood();
-                var currentNeighborhoodId = currentNeighborhood.getProperty("regionId");
-                svl.neighborhoodModel.neighborhoodCompleted(currentNeighborhoodId);
-                newTask = svl.taskContainer.nextTask();
-            }
-            // svl.taskContainer.setCurrentTask(newTask);
-            svl.taskContainer.initNextTask(newTask);
+            svl.taskContainer.getFinishedAndInitNextTask();
         }
         return availableMissions[0];
     }
@@ -501,7 +587,7 @@ function Main (params) {
         svl.ui.modalMissionComplete.missionTitle = $("#modal-mission-complete-title");
         svl.ui.modalMissionComplete.message = $("#modal-mission-complete-message");
         svl.ui.modalMissionComplete.map = $("#modal-mission-complete-map");
-        svl.ui.modalMissionComplete.completeBar = $('#modal-mission-complete-complete-bar')
+        svl.ui.modalMissionComplete.completeBar = $('#modal-mission-complete-complete-bar');
         svl.ui.modalMissionComplete.closeButton = $("#modal-mission-complete-close-button");
         svl.ui.modalMissionComplete.totalAuditedDistance = $("#modal-mission-complete-total-audited-distance");
         svl.ui.modalMissionComplete.missionDistance = $("#modal-mission-complete-mission-distance");
@@ -515,8 +601,11 @@ function Main (params) {
         // Zoom control
         svl.ui.zoomControl = {};
         svl.ui.zoomControl.holder = $("#zoom-control-holder");
-        svl.ui.zoomControl.holder.append('<button id="zoom-in-button" class="button zoom-control-button"><img src="' + svl.rootDirectory + 'img/icons/ZoomIn.svg" class="zoom-button-icon" alt="Zoom in"><br /><u>Z</u>oom In</button>');
-        svl.ui.zoomControl.holder.append('<button id="zoom-out-button" class="button zoom-control-button"><img src="' + svl.rootDirectory + 'img/icons/ZoomOut.svg" class="zoom-button-icon" alt="Zoom out"><br />Zoom Out</button>');
+        svl.ui.zoomControl.holder.append('<button id="zoom-in-button" class="button zoom-control-button" title="Press the &quot;Z&quot; key" data-toggle="tooltip" data-placement="top">' +
+            '<img src="' + svl.rootDirectory + 'img/icons/ZoomIn.svg" class="zoom-button-icon" alt="Zoom in">' +
+            '<br /><u>Z</u>oom In</button>');
+        svl.ui.zoomControl.holder.append('<button id="zoom-out-button" class="button zoom-control-button" title="Press the &quot;Shift + Z&quot; keys" data-toggle="tooltip" data-placement="top">' +
+            '<img src="' + svl.rootDirectory + 'img/icons/ZoomOut.svg" class="zoom-button-icon" alt="Zoom out"><br />Zoom Out</button>');
         svl.ui.zoomControl.zoomIn = $("#zoom-in-button");
         svl.ui.zoomControl.zoomOut = $("#zoom-out-button");
 

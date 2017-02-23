@@ -145,6 +145,13 @@
                 </div>
             </div>
             <div id="interaction-area-holder" onSelectStart="return true;">
+                <div id="alert-holder" style="display: none">
+                    <div id="alert">
+                        <span id="alert-message"></span>
+                        <a id="alert-dont-show" href="#">Don't show again</a>
+                        <a id="alert-close" href="#"><span class="glyphicon glyphicon-remove"></span></a>
+                    </div>
+                </div>
                 <div id="street-view-holder">
                     <div id="ribbon-street-view-connector"><!-- border --></div>
                     <!-- You can put an extra div element on top of the Street View div panel to disable any of StreetView control. -->
@@ -341,7 +348,7 @@
             <div id="modal-mission-complete-holder">
                 <div id="modal-mission-complete-background" class="modal-background"></div>
                 <div id="modal-mission-complete-foreground" class="modal-foreground">
-                    <h1>Mission Complete! <span class="normal" id="modal-mission-complete-title"></span></h1>
+                    <h1><span class="normal" id="modal-mission-complete-title"></span></h1>
                     <div class="row">
                         <div class="mapbox col-sm-7">
                             <div id="modal-mission-complete-map">

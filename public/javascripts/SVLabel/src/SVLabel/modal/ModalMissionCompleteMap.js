@@ -1,6 +1,6 @@
 function ModalMissionCompleteMap(uiModalMissionComplete) {
     // Map visualization
-    L.mapbox.accessToken = 'pk.eyJ1Ijoia290YXJvaGFyYSIsImEiOiJDdmJnOW1FIn0.kJV65G6eNXs4ATjWCtkEmA';
+    L.mapbox.accessToken = 'pk.eyJ1IjoicHJvamVjdHNpZGV3YWxrIiwiYSI6ImNpdmZtODFobjAxcjEydHBkbmg0Y2F0MGgifQ.tDBFPXecLVjgJA0Z1LFhhw';
     var self = this;
     this._southWest = L.latLng(38.761, -77.262);
     this._northEast = L.latLng(39.060, -76.830);
@@ -8,17 +8,26 @@ function ModalMissionCompleteMap(uiModalMissionComplete) {
     this._map = L.mapbox.map(uiModalMissionComplete.map.get(0), "kotarohara.8e0c6890", {
         maxBounds: this._bound,
         maxZoom: 19,
-        minZoom: 10
+        minZoom: 10,
+        style: 'mapbox://styles/projectsidewalk/civfm8qwi000l2iqo9ru4uhhj'
     }).fitBounds(this._bound);
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/projectsidewalk/civfm8qwi000l2iqo9ru4uhhj/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicHJvamVjdHNpZGV3YWxrIiwiYSI6ImNpdmZtODFobjAxcjEydHBkbmg0Y2F0MGgifQ.tDBFPXecLVjgJA0Z1LFhhw', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        accessToken: L.mapbox.accessToken
+    }).addTo(this._map);
+
     // these two are defined globaly so that they can be added in show and removed in hide
     this._overlayPolygon = null;
     this._overlayPolygonLayer = null;
     this._ui = uiModalMissionComplete;
+    this._completedTasksLayer = [];
 
     this._animateMissionTasks = function (completedTasks, index, max){
         var collection = this._linestringToPoint(completedTasks[index].getGeoJSON());
         var featuresdata = collection.features;
         var leafletMap = this._map;
+        var completedTasksLayer = this._completedTasksLayer;
 
         var svg = d3.select(leafletMap.getPanes().overlayPane).append("svg"),
 
@@ -72,7 +81,7 @@ function ModalMissionCompleteMap(uiModalMissionComplete) {
 
 
         function transition(transitionDuration) {
-            if (!transitionDuration) transitionDuration = 1000;
+            if (!transitionDuration) transitionDuration = 600;
             linePath.transition()
                 .duration(transitionDuration)
                 .attrTween("stroke-dasharray", tweenDash)
@@ -116,12 +125,14 @@ function ModalMissionCompleteMap(uiModalMissionComplete) {
 
         // render svg segments
         function renderPath(missionTasks){
-            var missionTaskLayerStyle = { color: "rgb(100,240,110)", opacity: 1, weight: 3 };
+            var missionTaskLayerStyle = {color: "rgb(20,220,120)", opacity: 1, weight: 5 };
+
             var len = missionTasks.length;
             for (var i = 0; i < len; i++) {
                 var  geojsonFeature = missionTasks[i].getFeature();
                 var layer = L.geoJson(geojsonFeature).addTo(leafletMap);
                 layer.setStyle(missionTaskLayerStyle);
+                completedTasksLayer.push(layer);
             }
         }
     };
@@ -142,7 +153,13 @@ function ModalMissionCompleteMap(uiModalMissionComplete) {
             len,
             geojsonFeature,
             layer,
-            completedTaskLayerStyle = { color: "rgb(49,130,189)", opacity: 1, weight: 3 };
+            completedTaskLayerStyle = { color: "rgb(100,100,100)", opacity: 1, weight: 5 },
+            leafletMap = this._map;
+
+        // remove previous tasks
+        _.each(this._completedTasksLayer, function(element) {
+            leafletMap.removeLayer(element);
+        });
 
         // remove after animation, otherwise segments remain green from previous tasks
         d3.select(this._map.getPanes().overlayPane)
@@ -159,6 +176,7 @@ function ModalMissionCompleteMap(uiModalMissionComplete) {
                 geojsonFeature = completedTasks[i].getFeature();
                 layer = L.geoJson(geojsonFeature).addTo(this._map);
                 layer.setStyle(completedTaskLayerStyle);
+                this._completedTasksLayer.push(layer);
             }
         }
 
@@ -187,6 +205,9 @@ ModalMissionCompleteMap.prototype.hide = function () {
 };
 
 ModalMissionCompleteMap.prototype.update = function (mission, neighborhood) {
+    // Clear the previous highlighted region
+    if(this._overlayPolygonLayer)
+        this._map.removeLayer(this._overlayPolygonLayer);
     // Focus on the current region on the Leaflet map
     var center = neighborhood.center();
     var neighborhoodGeom = neighborhood.getGeoJSON();

@@ -91,7 +91,7 @@ function Canvas (ribbon) {
             svl.ui.canvas.drawingLayer.bind('mousedown', handleDrawingLayerMouseDown);
             svl.ui.canvas.drawingLayer.bind('mouseup', handleDrawingLayerMouseUp);
             svl.ui.canvas.drawingLayer.bind('mousemove', handleDrawingLayerMouseMove);
-            svl.ui.canvas.drawingLayer.on('mouseout', handleDrawingLayerMouseOut);
+            $("#interaction-area-holder").on('mouseleave', handleDrawingLayerMouseOut);
         }
         if (svl.ui.canvas.deleteIcon) {
           svl.ui.canvas.deleteIcon.bind("click", labelDeleteIconClick);
@@ -175,10 +175,11 @@ function Canvas (ribbon) {
         }
 
         svl.tracker.push('LabelingCanvas_FinishLabeling', {
-            'temporary_label_id': status.currentLabel.getProperty('temporary_label_id'),
-            'LabelType': labelDescription.id,
+            labelType: labelDescription.id,
             canvasX: tempPath[0].x,
             canvasY: tempPath[0].y
+        }, {
+            temporaryLabelId: status.currentLabel.getProperty('temporary_label_id')
         });
         svl.actionStack.push('addLabel', status.currentLabel);
 
@@ -322,6 +323,7 @@ function Canvas (ribbon) {
             if (rightClickMenu && rightClickMenu.isAnyOpen()) {
                 cursorUrl = 'default';
             }
+            $(this).css('cursor', ''); //should first reset the cursor, otherwise safari strangely does not update the cursor
             $(this).css('cursor', cursorUrl);
         }
 

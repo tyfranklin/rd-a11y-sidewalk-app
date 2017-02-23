@@ -11,16 +11,25 @@ import play.extras.geojson
 
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 
-case class AuditTaskInteraction(auditTaskInteractionId: Int, auditTaskId: Int, action: String,
-                                gsvPanoramaId: Option[String], lat: Option[Float], lng: Option[Float],
-                                heading: Option[Float], pitch: Option[Float], zoom: Option[Int],
-                                note: Option[String], temporaryLabelId: Option[Int], timestamp: java.sql.Timestamp)
+case class AuditTaskInteraction(auditTaskInteractionId: Int,
+                                auditTaskId: Int,
+                                action: String,
+                                gsvPanoramaId: Option[String],
+                                lat: Option[Float],
+                                lng: Option[Float],
+                                heading: Option[Float],
+                                pitch: Option[Float],
+                                zoom: Option[Int],
+                                note: Option[String],
+                                temporaryLabelId: Option[Int],
+                                timestamp: java.sql.Timestamp)
 
 case class InteractionWithLabel(auditTaskInteractionId: Int, auditTaskId: Int, action: String,
                                 gsvPanoramaId: Option[String], lat: Option[Float], lng: Option[Float],
                                 heading: Option[Float], pitch: Option[Float], zoom: Option[Int],
                                 note: Option[String], timestamp: java.sql.Timestamp,
-                                labelType: Option[String], labelLat: Option[Float], labelLng: Option[Float])
+                                labelType: Option[String], labelLat: Option[Float], labelLng: Option[Float],
+                                canvasX: Int, canvasY: Int, canvasWidth: Int, canvasHeight: Int)
 
 class AuditTaskInteractionTable(tag: Tag) extends Table[AuditTaskInteraction](tag, Some("sidewalk"), "audit_task_interaction") {
   def auditTaskInteractionId = column[Int]("audit_task_interaction_id", O.PrimaryKey, O.AutoInc)
@@ -44,17 +53,37 @@ class AuditTaskInteractionTable(tag: Tag) extends Table[AuditTaskInteraction](ta
  * Data access object for the audit_task_environment table
  */
 object AuditTaskInteractionTable {
+  implicit val interactionWithLabelConverter = GetResult[InteractionWithLabel](r => {
+    InteractionWithLabel(
+      r.nextInt, r.nextInt, r.nextString, r.nextStringOption, r.nextFloatOption, r.nextFloatOption,
+      r.nextFloatOption, r.nextFloatOption, r.nextIntOption, r.nextStringOption, r.nextTimestamp,
+      r.nextStringOption, r.nextFloatOption, r.nextFloatOption, r.nextInt, r.nextInt, r.nextInt, r.nextInt)
+  })
+
+  implicit val auditTaskInteraction = GetResult[AuditTaskInteraction](r => {
+    AuditTaskInteraction(
+      r.nextInt,
+      r.nextInt,
+      r.nextString,  // action
+      r.nextStringOption, // gsvPanoramaId
+      r.nextFloatOption,  // lat
+      r.nextFloatOption, // lng
+      r.nextFloatOption, // heading
+      r.nextFloatOption, // pitch
+      r.nextIntOption, // zoom,
+      r.nextStringOption, // note
+      r.nextIntOption,  // timestamp
+      r.nextTimestamp
+    )
+  })
+
   val db = play.api.db.slick.DB
   val auditTasks = TableQuery[AuditTaskTable]
   val auditTaskInteractions = TableQuery[AuditTaskInteractionTable]
   val labels = TableQuery[LabelTable]
   val labelPoints = TableQuery[LabelPointTable]
 
-  implicit val interactionWithLabelConverter = GetResult[InteractionWithLabel](r => {
-    InteractionWithLabel(r.nextInt, r.nextInt, r.nextString, r.nextStringOption, r.nextFloatOption, r.nextFloatOption,
-      r.nextFloatOption, r.nextFloatOption, r.nextIntOption, r.nextStringOption, r.nextTimestamp,
-      r.nextStringOption, r.nextFloatOption, r.nextFloatOption)
-  })
+
 
 
   def save(interaction: AuditTaskInteraction): Int = db.withTransaction { implicit session =>
@@ -85,6 +114,44 @@ object AuditTaskInteractionTable {
     _auditTaskInteractions.list
   }
 
+  def selectAuditTaskInteractionsOfAUser(regionId: Int, userId: UUID): List[AuditTaskInteraction] = db.withSession { implicit session =>
+    val selectInteractionQuery = Q.query[(Int, String), AuditTaskInteraction](
+      """SELECT
+        |  audit_task_interaction.audit_task_interaction_id,
+        |  audit_task_interaction.audit_task_id,
+        |  audit_task_interaction.action,
+        |  audit_task_interaction.gsv_panorama_id,
+        |  audit_task_interaction.lat,
+        |  audit_task_interaction.lng,
+        |  audit_task_interaction.heading,
+        |  audit_task_interaction.pitch,
+        |  audit_task_interaction.zoom,
+        |  audit_task_interaction.note,
+        |  audit_task_interaction.temporary_label_id,
+        |  audit_task_interaction.timestamp
+        |FROM "sidewalk"."audit_task"
+        |INNER JOIN "sidewalk"."street_edge"
+        |  ON street_edge.street_edge_id = audit_task.street_edge_id
+        |INNER JOIN "sidewalk"."region"
+        |  ON region.region_id = ?
+        |  AND ST_Intersects(region.geom, street_edge.geom)
+        |INNER JOIN "sidewalk"."audit_task_interaction"
+        |  ON audit_task_interaction.audit_task_id = audit_task.audit_task_id
+        |WHERE "audit_task".user_id = ?
+        |  AND (
+        |    audit_task_interaction.action = 'MissionComplete'
+        |    OR (
+        |      audit_task_interaction.action = 'LabelingCanvas_FinishLabeling'
+        |      AND audit_task.completed = TRUE
+        |    )
+        |  )
+        |ORDER BY audit_task_interaction.audit_task_interaction_id""".stripMargin
+    )
+
+    val result: List[AuditTaskInteraction] = selectInteractionQuery((regionId, userId.toString)).list
+    result
+  }
+
   /**
    * Get a list of audit task interaction
     *
@@ -107,7 +174,9 @@ object AuditTaskInteractionTable {
       """SELECT interaction.audit_task_interaction_id, interaction.audit_task_id, interaction.action,
         |interaction.gsv_panorama_id, interaction.lat, interaction.lng, interaction.heading, interaction.pitch,
         |interaction.zoom, interaction. note, interaction.timestamp, label_type.label_type,
-        |label_point.lat AS label_lat, label_point.lng AS label_lng
+        |label_point.lat AS label_lat, label_point.lng AS label_lng, label_point.canvas_x as canvas_x,
+        |label_point.canvas_y as canvas_y, label_point.canvas_width as canvas_width,
+        |label_point.canvas_height as canvas_height
         |FROM sidewalk.audit_task_interaction AS interaction
         |LEFT JOIN sidewalk.label
         |ON interaction.temporary_label_id = label.temporary_label_id
@@ -136,16 +205,32 @@ object AuditTaskInteractionTable {
       val point = geojson.Point(geojson.LatLng(interaction.lat.get.toDouble, interaction.lng.get.toDouble))
       val properties = if (interaction.labelType.isEmpty) {
         Json.obj(
+          "panoId" -> interaction.gsvPanoramaId,
           "heading" -> interaction.heading.get.toDouble,
-          "timestamp" -> interaction.timestamp.getTime
+          "pitch" -> interaction.pitch,
+          "zoom" -> interaction.zoom,
+          "timestamp" -> interaction.timestamp.getTime,
+          "canvasHeight" -> interaction.canvasHeight,
+          "canvasWidth" -> interaction.canvasWidth,
+          "action" -> interaction.action,
+          "note" -> interaction.note
         )
       } else {
         Json.obj(
+          "panoId" -> interaction.gsvPanoramaId,
           "heading" -> interaction.heading.get.toDouble,
+          "pitch" -> interaction.pitch,
+          "zoom" -> interaction.zoom,
           "timestamp" -> interaction.timestamp.getTime,
+          "canvasHeight" -> interaction.canvasHeight,
+          "canvasWidth" -> interaction.canvasWidth,
+          "action" -> interaction.action,
+          "note" -> interaction.note,
           "label" -> Json.obj(
             "label_type" -> interaction.labelType,
-            "coordinates" -> Seq(interaction.labelLng, interaction.labelLat)
+            "coordinates" -> Seq(interaction.labelLng, interaction.labelLat),
+            "canvasX" -> interaction.canvasX,
+            "canvasY" -> interaction.canvasY
           )
         )
       }
