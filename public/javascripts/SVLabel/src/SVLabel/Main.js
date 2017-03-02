@@ -28,15 +28,15 @@ function Main (params) {
     svl.canvasHeight = 480;
     svl.svImageHeight = 6656;
     svl.svImageWidth = 13312;
-    svl.alpha_x = 4.6;
-    svl.alpha_y = -4.65;
+    svl.alpha_x = 5.6;
+    svl.alpha_y = -5.65;
     svl._labelCounter = 0;
     svl.getLabelCounter = function () {
         return svl._labelCounter++;
     };
     svl.zoomFactor = {
         1: 1,
-        2: 2.1,
+        2: 2,
         3: 4,
         4: 8,
         5: 16
@@ -76,6 +76,11 @@ function Main (params) {
 
         y = yIn - (svImageHeight / 2) * (pov.pitch / 90);
         y = y / svl.alpha_y + svl.canvasHeight / 2;
+        
+        // console.log("New call!");
+        // console.log("xIn: " + xIn + " yIn: " + yIn);
+        // console.log("POV: " + pov.heading + " " + pov.pitch);
+        // console.log("x:"+ x + " y:" + y);
 
         return {x : x, y : y};
     };

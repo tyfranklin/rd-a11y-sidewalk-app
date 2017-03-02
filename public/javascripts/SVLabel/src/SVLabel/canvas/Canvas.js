@@ -62,6 +62,9 @@ function Canvas (ribbon) {
         showLabelTag: false
     };
 
+    var labelTraces = {}; // Debugging issue #429;
+    var labelTracesCSVString = ""; // Debugging issue #429;
+
     // Canvas context
     var canvasProperties = {'height':0, 'width':0};
     var ctx;
@@ -78,7 +81,7 @@ function Canvas (ribbon) {
 
     // Initialization
     function _init () {
-        var el = document.getElementById("label-canvas");
+            var el = document.getElementById("label-canvas");
         if (!el) {
             return false;
         }
@@ -560,6 +563,18 @@ function Canvas (ribbon) {
     }
 
     /**
+     * DEBUGGING ISSUE #429
+     * Returns the label trace of the points while panning
+     */
+    function getLabelTrace () {
+        return labelTracesCSVString;
+    }
+
+    function resetLabelTrace () {
+        labelTracesCSVString = '';
+    }
+
+    /**
      * Returns the label of the current focus
      * @method
      */
@@ -860,12 +875,37 @@ function Canvas (ribbon) {
         return this;
     }
 
+    /* For Debugging Purposes
+     Label Sticking Problem (issue #429)
+     */
+
+    function convertToCSV(jsonObjectArray) {
+        var array = typeof jsonObjectArray != 'object' ? JSON.parse(jsonObjectArray) : jsonObjectArray;
+        var csvString = '';
+
+        for (var pano in array) {
+            var panoArray = array[pano];
+            for (var i = 0; i < panoArray.length; i++) {
+                var line = '';
+                for (var index in panoArray[i]) {
+                    if (line != '') line += ',';
+                    line += panoArray[i][index];
+                }
+                csvString += line + '\r\n';
+            }
+        }
+        return csvString;
+    }
+
+    /* Debugging code end */
+
 
     /**
      * Renders labels
      * @method
      */
-    function render2 () {
+    function render2 (draggedScreen) {
+        if(draggedScreen == undefined) draggedScreen = false;
         if (!ctx) { return this; }
         var i, j, label, lenLabels,
             labels = svl.labelContainer.getCanvasLabels();
@@ -939,6 +979,30 @@ function Canvas (ribbon) {
         for (i = 0; i < lenLabels; i += 1) {
             label = labels[i];
             label.render(ctx, pov);
+
+            /* Debugging Github Issue #429 */
+            if (draggedScreen){
+
+                //Log point data
+                var panoId = label.getProperty("panoId");
+                var canvasCoord = label.getCoordinate();
+                var canvasX = canvasCoord.x, canvasY = canvasCoord.y;
+                var imageCoord = label.getGSVImageCoordinate();
+                if (!(panoId in labelTraces)){
+                    labelTraces[panoId] = [];
+                }
+
+                var pointJson = {"canvasX": canvasX, "canvasY": canvasY,
+                    "gsvX": imageCoord.x, "gsvY": imageCoord.y,
+                    "heading": pov.heading, "pitch": pov.pitch, "zoom": pov.zoom
+                };
+
+                labelTraces[panoId].push(pointJson);
+                var pointDataJson = JSON.stringify(labelTraces);
+                labelTracesCSVString = convertToCSV(pointDataJson);
+            }
+            /* Debugging Stop */
+
 
             if (label.isVisible() && !label.isDeleted()) {
                 labelCount[label.getLabelType()] += 1;
@@ -1017,7 +1081,8 @@ function Canvas (ribbon) {
      * @param label
      * @returns {showLabelTag}
      */
-    function showLabelTag (label) {
+    function showLabelTag (label, draggedScreen) {
+        if (draggedScreen == undefined) draggedScreen = false;
         if (!lock.showLabelTag) {
             var i,
                 labels = svl.labelContainer.getCanvasLabels(),
@@ -1038,7 +1103,12 @@ function Canvas (ribbon) {
                 svl.ui.canvas.deleteIconHolder.css('visibility', 'hidden');
             }
             self.clear();
-            self.render2();
+            if (draggedScreen){
+                self.render2(draggedScreen);
+            }
+            else{
+                self.render2();
+            }
             return this;
         }
     }
@@ -1160,6 +1230,7 @@ function Canvas (ribbon) {
     self.enableLabelEdit = enableLabelEdit;
     self.enableLabeling = enableLabeling;
     self.getCurrentLabel = getCurrentLabel;
+    self.getLabelTrace = getLabelTrace;
     self.getLabels = getLabels;
     self.getLock = getLock;
     self.getNumLabels = getNumLabels;
@@ -1182,6 +1253,7 @@ function Canvas (ribbon) {
     self.removeAllLabels = removeAllLabels;
     self.render = render2;
     self.render2 = render2;
+    self.resetLabelTrace = resetLabelTrace;
     self.renderBoundingBox = renderBoundingBox;
     self.setCurrentLabel = setCurrentLabel;
     self.setStatus = setStatus;

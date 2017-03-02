@@ -868,6 +868,7 @@ function Label (svl, pathIn, params) {
     self.blink = blink;
     self.fadeFillStyle = fadeFillStyle;
     self.getBoundingBox = getBoundingBox;
+    self.getCoordinate = getCoordinate;
     self.getGSVImageCoordinate = getGSVImageCoordinate;
     self.getImageCoordinates = getImageCoordinates;
     self.getLabelId = getLabelId;

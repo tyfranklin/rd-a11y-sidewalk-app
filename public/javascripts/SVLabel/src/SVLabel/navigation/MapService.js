@@ -336,6 +336,7 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
         var zoomFactor = svl.zoomFactor[pov.zoom];
         var x = svl.svImageWidth * pov.heading / 360 + (svl.alpha_x * (canvasX - (svl.canvasWidth / 2)) / zoomFactor);
         var y = (svl.svImageHeight / 2) * pov.pitch / 90 + (svl.alpha_y * (canvasY - (svl.canvasHeight / 2)) / zoomFactor);
+        console.log("mapService User position in the image: \n Sx: " + x + " Sy:" + y);
         return { x: x, y: y };
     }
 
@@ -614,7 +615,7 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
     }
 
     /**
-     * Callback for to track when user moves away from his current location
+     * Callback to track when user moves away from his current location
      */
 
     function trackBeforeJumpActions() {
@@ -884,6 +885,8 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
         mouseStatus.currX = mouseposition(e, this).x;
         mouseStatus.currY = mouseposition(e, this).y;
 
+        var draggedScreen = false;
+
         // Show a link and fade it out
         if (!status.disableWalking) {
             showLinks(2000);
@@ -905,34 +908,61 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
             dx *= 1.5;
             dy *= 1.5;
             updatePov(dx, dy);
+
+            draggedScreen = true;
         }
 
         // Show label delete menu
-            var item = _canvas.isOn(mouseStatus.currX,  mouseStatus.currY);
-            if (item && item.className === "Point") {
-                var path = item.belongsTo();
-                var selectedLabel = path.belongsTo();
+        var item = _canvas.isOn(mouseStatus.currX,  mouseStatus.currY);
+        if (item && item.className === "Point") {
+            var path = item.belongsTo();
+            var selectedLabel = path.belongsTo();
 
-                _canvas.setCurrentLabel(selectedLabel);
+            _canvas.setCurrentLabel(selectedLabel);
+            //Debugging #429
+            if (draggedScreen) {
+                _canvas.showLabelTag(selectedLabel, true);
+            }
+            else{
                 _canvas.showLabelTag(selectedLabel);
-                _canvas.clear();
-                _canvas.render2();
-            } else if (item && item.className === "Label") {
-                var selectedLabel = item;
-                _canvas.setCurrentLabel(selectedLabel);
+            }
+
+            _canvas.clear();
+            _canvas.render2();
+        } else if (item && item.className === "Label") {
+            var selectedLabel = item;
+            _canvas.setCurrentLabel(selectedLabel);
+            //Debugging #429
+            if (draggedScreen) {
+                _canvas.showLabelTag(selectedLabel, true);
+            }
+            else{
                 _canvas.showLabelTag(selectedLabel);
-            } else if (item && item.className === "Path") {
-                var label = item.belongsTo();
-                _canvas.clear();
-                _canvas.render2();
+            }
+            // _canvas.showLabelTag(selectedLabel);
+        } else if (item && item.className === "Path") {
+            var label = item.belongsTo();
+            _canvas.clear();
+            _canvas.render2();
+            //Debugging #429
+            if (draggedScreen) {
+                _canvas.showLabelTag(label, true);
+            }
+            else{
                 _canvas.showLabelTag(label);
             }
-            else {
-                // canvas.hideDeleteLabel();
-                _canvas.showLabelTag(undefined);
-                _canvas.setCurrentLabel(undefined);
+        }
+        else {
+            // canvas.hideDeleteLabel();
+            //Debugging #429
+            if (draggedScreen) {
+                _canvas.showLabelTag(undefined, true);
             }
-
+            else{
+                _canvas.showLabelTag(undefined);
+            }
+            _canvas.setCurrentLabel(undefined);
+        }
 
         mouseStatus.prevX = mouseposition(e, this).x;
         mouseStatus.prevY = mouseposition(e, this).y;

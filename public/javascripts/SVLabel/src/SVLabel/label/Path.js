@@ -122,6 +122,7 @@ function Path (svl, points, params) {
         // Note canvasWidthInGSVImage is approximately equals to the image width of GSV image that fits in one canvas view
         var canvasWidthInGSVImage = 3328;
         for (i = 0; i < len; i += 1) {
+            // console.log("Stored ImCoord:: Sx: " + imCoords[i].x + " Sy: " + imCoords[i].y);
             if (pov.heading < 180) {
                 if (max > svl.svImageWidth - canvasWidthInGSVImage) {
                     if (imCoords[i].x > canvasWidthInGSVImage) {

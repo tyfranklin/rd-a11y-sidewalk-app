@@ -40,6 +40,25 @@ function Point (svl, x, y, pov, params) {
             'visibilityIcon' : 'visible'
     };
 
+    /* For Debugging Purposes
+     Label Sticking Problem (issue #429)
+     */
+
+    function convertToCSV(jsonObject) {
+        var array = typeof jsonObject != 'object' ? JSON.parse(jsonObject) : jsonObject;
+        var csvString = '';
+
+        var line = '';
+        for (var index in array) {
+            if (line != '') line += ',';
+            line += array[index];
+        }
+        csvString += line + '\r\n';
+        return csvString;
+    }
+
+    /* Debugging code end */
+
     function _init (x, y, pov, params) {
         // Convert a canvas coordinate (x, y) into a sv image coordinate
         // Note, svImageCoordinate.x varies from 0 to svImageWidth and
@@ -53,6 +72,19 @@ function Point (svl, x, y, pov, params) {
         self.svImageCoordinate = {};
         self.svImageCoordinate.x = svImageWidth * pov.heading / 360 + (svl.alpha_x * (x - (svl.canvasWidth / 2)) / zoomFactor);
         self.svImageCoordinate.y = (svImageHeight / 2) * pov.pitch / 90 + (svl.alpha_y * (y - (svl.canvasHeight / 2)) / zoomFactor);
+
+        /* *** Debugging ***
+            Store label related data into a file
+         */
+        var pointData = {"panoid": svl.map.getPanoId() ,"canvasX": x, "canvasY": y,
+            "gsvX": self.svImageCoordinate.x, "gsvY": self.svImageCoordinate.y,
+            "heading": pov.heading, "pitch": pov.pitch, "zoom": pov.zoom
+        };
+        var pointDataJson = JSON.stringify(pointData);
+        console.log(convertToCSV(pointDataJson));
+        console.log("Cx: " + x + " Cy: " + y);
+        console.log("FirstCalc svImage X: " + self.svImageCoordinate.x + " Y:" + self.svImageCoordinate.y);
+
         // svImageCoordinate.x could be negative, so adjust it.
         if (self.svImageCoordinate.x < 0) {
             self.svImageCoordinate.x = self.svImageCoordinate.x + svImageWidth;
@@ -131,7 +163,8 @@ function Point (svl, x, y, pov, params) {
      */
     function getCanvasCoordinate (pov) {
         self.canvasCoordinate = svl.gsvImageCoordinate2CanvasCoordinate(self.svImageCoordinate.x, self.svImageCoordinate.y, pov);
-        return svl.gsvImageCoordinate2CanvasCoordinate(self.svImageCoordinate.x, self.svImageCoordinate.y, pov);
+        return self.canvasCoordinate;
+        // return svl.gsvImageCoordinate2CanvasCoordinate(self.svImageCoordinate.x, self.svImageCoordinate.y, pov);
     }
 
     /**
