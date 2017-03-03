@@ -28,7 +28,7 @@ function Main (params) {
     svl.canvasHeight = 480;
     svl.svImageHeight = 6656;
     svl.svImageWidth = 13312;
-    svl.alpha_x = 5.6;
+    svl.alpha_x = 5;
     svl.alpha_y = -5.65;
     svl._labelCounter = 0;
     svl.getLabelCounter = function () {
