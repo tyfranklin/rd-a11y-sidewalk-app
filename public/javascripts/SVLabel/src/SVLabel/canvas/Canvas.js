@@ -327,7 +327,8 @@ function Canvas (ribbon) {
                 cursorUrl = 'default';
             }
             $(this).css('cursor', ''); //should first reset the cursor, otherwise safari strangely does not update the cursor
-            $(this).css('cursor', cursorUrl);
+            // $(this).css('cursor', cursorUrl);
+            $(this).css('cursor', 'default'); // Debugging $429 - to get exact point
         }
 
 
@@ -924,7 +925,8 @@ function Canvas (ribbon) {
 
 
         var points, pointsLen, pointData, svImageCoordinate, deltaHeading, deltaPitch, x, y;
-        // The image coordinates of the points in system labels shift as the projection parameters (i.e., heading and pitch) that
+        // The image coordinates of the points in system labels shift as the projection parameters (i.e., heading and pitch)
+        // that
         // you can get from Street View API change. So adjust the image coordinate
         // Note that this adjustment happens only once
         if (!status.svImageCoordinatesAdjusted) {
