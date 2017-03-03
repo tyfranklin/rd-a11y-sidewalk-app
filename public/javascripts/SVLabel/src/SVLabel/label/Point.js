@@ -63,7 +63,7 @@ function Point (svl, x, y, pov, params) {
         // Convert a canvas coordinate (x, y) into a sv image coordinate
         // Note, svImageCoordinate.x varies from 0 to svImageWidth and
         // svImageCoordinate.y varies from -(svImageHeight/2) to svImageHeight/2.
-        
+
         // Adjust the zoom level
         var zoom = pov.zoom;
         var zoomFactor = svl.zoomFactor[zoom];
