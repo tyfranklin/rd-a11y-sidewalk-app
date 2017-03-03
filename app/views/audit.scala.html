@@ -698,7 +698,8 @@
         function init() {
             var mainParam = {},
                     formParam = {},
-                    initialLocation = svl.taskContainer.getCurrentTask().getStartCoordinate();
+                    initialLocation = { "lat": 38.88605878659553, "lng": -76.94623786176965 }; // Debugging #429
+//                    initialLocation = svl.taskContainer.getCurrentTask().getStartCoordinate();
             formParam.dataStoreUrl = '@routes.TaskController.post';
             formParam.hitId = '';
             formParam.assignmentId = '';
