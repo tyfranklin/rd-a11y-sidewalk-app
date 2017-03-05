@@ -36,11 +36,12 @@ function Main (params) {
     };
     svl.zoomFactor = {
         1: 1,
-        2: 2,
+        2: 2.1,
         3: 4,
         4: 8,
         5: 16
     };
+
 
     svl.gsvImageCoordinate2CanvasCoordinate = function (xIn, yIn, pov) {
         // This function takes the current pov of the Street View as a parameter

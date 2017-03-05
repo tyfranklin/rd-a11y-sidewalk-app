@@ -73,6 +73,9 @@ function Point (svl, x, y, pov, params) {
         self.svImageCoordinate.x = svImageWidth * pov.heading / 360 + (svl.alpha_x * (x - (svl.canvasWidth / 2)) / zoomFactor);
         self.svImageCoordinate.y = (svImageHeight / 2) * pov.pitch / 90 + (svl.alpha_y * (y - (svl.canvasHeight / 2)) / zoomFactor);
 
+        console.log("Cx: " + x + " Cy: " + y);
+        console.log("FirstCalc svImage X: " + self.svImageCoordinate.x + " Y:" + self.svImageCoordinate.y);
+
         /* *** Debugging ***
             Store label related data into a file
          */
@@ -82,8 +85,6 @@ function Point (svl, x, y, pov, params) {
         };
         var pointDataJson = JSON.stringify(pointData);
         console.log(convertToCSV(pointDataJson));
-        console.log("Cx: " + x + " Cy: " + y);
-        console.log("FirstCalc svImage X: " + self.svImageCoordinate.x + " Y:" + self.svImageCoordinate.y);
 
         // svImageCoordinate.x could be negative, so adjust it.
         if (self.svImageCoordinate.x < 0) {
