@@ -50,7 +50,7 @@ function OnboardingStates (compass, mapService, statusModel, tracker) {
                 {
                     "name": "arrow-1a",
                     "type": "arrow",
-                    "x": 9710,
+                    "x": 9680,
                     "y": -325,
                     "length": 50,
                     "angle": 0,

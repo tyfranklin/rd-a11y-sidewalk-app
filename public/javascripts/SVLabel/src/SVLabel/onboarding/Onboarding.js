@@ -123,38 +123,46 @@ function Onboarding (svl, actionStack, audioEffect, compass, form, handAnimation
             var lineWidth = 1,
                 fill = 'rgba(255,255,255,1)',
                 lineCap = 'round',
-                arrowWidth = 6,
+                // arrowWidth = 6,
                 strokeStyle  = 'rgba(96, 96, 96, 1)',
                 dx, dy, theta;
 
-            if ("fill" in parameters && parameters.fill) fill = parameters.fill;
+            var image = document.getElementById("white-arrow");
 
-            dx = x2 - x1;
-            dy = y2 - y1;
-            theta = Math.atan2(dy, dx);
+            if ("fill" in parameters && parameters.fill) {
+                // fill = parameters.fill;
+                image = document.getElementById("flashing-yellow-arrow");
+            }
+            //
+            // dx = x2 - x1;
+            // dy = y2 - y1;
+            // theta = Math.atan2(dy, dx);
 
+            var x = x1 - 10, y = y1 + 20;
+            var arrowWidth = 35, arrowHeight = 60;
             ctx.save();
-            ctx.fillStyle = fill;
-            ctx.strokeStyle = strokeStyle;
-            ctx.lineWidth = lineWidth;
-            ctx.lineCap = lineCap;
-
-            ctx.translate(x1, y1);
-            ctx.beginPath();
-            ctx.moveTo(arrowWidth * Math.sin(theta), - arrowWidth * Math.cos(theta));
-            ctx.lineTo(dx + arrowWidth * Math.sin(theta), dy - arrowWidth * Math.cos(theta));
-
-            // Draw an arrow head
-            ctx.lineTo(dx + 3 * arrowWidth * Math.sin(theta), dy - 3 * arrowWidth * Math.cos(theta));
-            ctx.lineTo(dx + 3 * arrowWidth * Math.cos(theta), dy + 3 * arrowWidth * Math.sin(theta));
-            ctx.lineTo(dx - 3 * arrowWidth * Math.sin(theta), dy + 3 * arrowWidth * Math.cos(theta));
-
-            ctx.lineTo(dx - arrowWidth * Math.sin(theta), dy + arrowWidth * Math.cos(theta));
-            ctx.lineTo(- arrowWidth * Math.sin(theta), + arrowWidth * Math.cos(theta));
-
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
+            ctx.drawImage(image, x, y, arrowWidth, arrowHeight);
+            // ctx.fillStyle = fill;
+            // ctx.strokeStyle = strokeStyle;
+            // ctx.lineWidth = lineWidth;
+            // ctx.lineCap = lineCap;
+            //
+            // ctx.translate(x1, y1);
+            // ctx.beginPath();
+            // ctx.moveTo(arrowWidth * Math.sin(theta), - arrowWidth * Math.cos(theta));
+            // ctx.lineTo(dx + arrowWidth * Math.sin(theta), dy - arrowWidth * Math.cos(theta));
+            //
+            // // Draw an arrow head
+            // ctx.lineTo(dx + 3 * arrowWidth * Math.sin(theta), dy - 3 * arrowWidth * Math.cos(theta));
+            // ctx.lineTo(dx + 3 * arrowWidth * Math.cos(theta), dy + 3 * arrowWidth * Math.sin(theta));
+            // ctx.lineTo(dx - 3 * arrowWidth * Math.sin(theta), dy + 3 * arrowWidth * Math.cos(theta));
+            //
+            // ctx.lineTo(dx - arrowWidth * Math.sin(theta), dy + arrowWidth * Math.cos(theta));
+            // ctx.lineTo(- arrowWidth * Math.sin(theta), + arrowWidth * Math.cos(theta));
+            //
+            // ctx.fill();
+            // ctx.stroke();
+            // ctx.closePath();
             ctx.restore();
         }
         return this;
