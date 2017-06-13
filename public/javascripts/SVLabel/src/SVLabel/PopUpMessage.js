@@ -101,7 +101,11 @@ function PopUpMessage (form, storage, taskContainer, tracker, user, onboardingMo
 
             $("#sign-in-modal").addClass("hidden");
             $("#sign-up-modal").removeClass("hidden");
+            $('#sign-in-modal-container').on('shown.bs.modal', function(e){
+                $('#username').focus();
+            });
             $('#sign-in-modal-container').modal('show');
+
         });
         self._appendButton('<button id="pop-up-message-cancel-button" class="float">No</button>', function () {
 
@@ -135,7 +139,12 @@ function PopUpMessage (form, storage, taskContainer, tracker, user, onboardingMo
 
             $("#sign-in-modal").removeClass("hidden");
             $("#sign-up-modal").addClass("hidden");
+            $('#sign-in-modal-container').on('shown.bs.modal', function(e){
+                $('#identifier').focus();
+            });
             $('#sign-in-modal-container').modal('show');
+
+
         });
         self._setPosition(40, 260, 640);
         self.show(true);

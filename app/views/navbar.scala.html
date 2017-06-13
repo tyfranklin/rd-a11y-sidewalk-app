@@ -25,7 +25,7 @@
                     </li>
 
                 } else {
-                    
+
                     <li>
                         <a href="#" id="toolbar-onboarding-link">Retake tutorial</a>
                     </li>
@@ -74,13 +74,18 @@
 @if(!user) {
     <script type="text/javascript">
             $(document).ready(function () {
+                $('#sign-in-modal-container').on('shown.bs.modal', function(e){
+                    $('#identifier').focus();
+                });
                 $("#form-open-sign-up").on("mouseup", function () {
                     $("#sign-in-modal").addClass("hidden");
                     $("#sign-up-modal").removeClass("hidden");
+                    $('#username').focus();
                 });
                 $("#form-open-sign-in").on("mouseup", function () {
                     $("#sign-up-modal").addClass("hidden");
                     $("#sign-in-modal").removeClass("hidden");
+                    $('#identifier').focus();
                 });
             });
     </script>
