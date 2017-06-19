@@ -365,6 +365,8 @@ function Admin(_, $, c3, turf) {
         });
     }
 
+
+
     /**
      * Takes a completion percentage, bins it, and returns the appropriate color for a choropleth.
      *
@@ -1202,6 +1204,118 @@ function Admin(_, $, c3, turf) {
                     "mode": "vega-lite"
                 };
                 vega.embed("#label-count-chart", chart, opt, function(error, results) {});
+            });
+
+            // Anonymous User Retention Rate
+            $.getJSON("/adminapi/numAnonActivities/Visit_Index", function(numVisitIndexes){
+                $.getJSON("/adminapi/numActivities/SignIn", function(numSignIns){
+                    $.getJSON("/adminapi/numAnonActivities/Visit_Audit", function(numVisitAudits){
+                        $.getJSON("/adminapi/anonOnboardingInOut", function(onboardingInOut){
+                            console.log(numVisitIndexes, numSignIns, numVisitAudits);
+                            console.log(onboardingInOut);
+                            $.getJSON("/adminapi/numAnonActivities/First_Mission_Complete", function(firstMissionComplete){
+                                firstMissionComplete = 0;
+                                var retentionGraph =
+                                    {
+                                        "width": 800,
+                                        "height": 300,
+                                        "padding": 5,
+
+                                        "data":
+                                            {
+                                                "name": "table",
+                                                "values": [
+                                                    //{"category": "Visit Index", "amount": numVisitIndexes/numVisitIndexes*100},
+                                                    {"index": 0, "category": "Sign In", "amount": numSignIns/numVisitIndexes*100},
+                                                    {"index": 1, "category": "Start Mapping", "amount": numVisitAudits/numVisitIndexes*100},
+                                                    {"index": 2, "category": "Begin Onboarding", "amount": onboardingInOut[0]/numVisitIndexes*100},
+                                                    {"index": 3, "category": "Complete Onboarding", "amount": onboardingInOut[1]/numVisitIndexes*100},
+                                                    {"index": 4, "category": "Complete First Mission", "amount": firstMissionComplete/numVisitIndexes*100}
+                                                ]
+                                            }
+                                        ,
+
+                                        "scales": [
+                                            {
+                                                "name": "xscale",
+                                                "type": "band",
+                                                "domain": {"data": "table", "field": "category"},
+                                                "range": "width",
+                                                "padding": 0.05,
+                                                "round": true
+                                            },
+                                            {
+                                                "name": "yscale",
+                                                "domain": {"data": "table", "field": "amount"},
+                                                "nice": true,
+                                                "range": "height"
+                                            }
+                                        ],
+
+                                        "axes": [
+                                            {
+                                                "orient": "bottom",
+                                                "scale": "xscale",
+                                                "title": "Site Area"
+                                            },
+                                            {
+                                                "orient": "left",
+                                                "scale": "yscale",
+                                                "title": "Anonymous Users Retained (%)"
+                                            }
+                                        ],
+                                        "config": {
+                                            "axis": {
+                                                "labelFontSize": 14,
+                                                "titleFontSize": 16
+                                            }
+                                        },
+                                        "marks": [
+                                            {
+                                                "type": "rect",
+                                                "from": {"data":"table"},
+                                                "encode": {
+                                                    "enter": {
+                                                        "x": {"scale": "xscale", "field": "category"},
+                                                        "width": {"scale": "xscale", "band": 1},
+                                                        "y": {"scale": "yscale", "field": "amount"},
+                                                        "y2": {"scale": "yscale", "value": 0}
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "text",
+                                                "encode": {
+                                                    "enter": {
+                                                        "align": {"value": "center"},
+                                                        "baseline": {"value": "bottom"},
+                                                        "fill": {"value": "#333"},
+                                                        "x": {"scale": "xscale", "field": "index", "band": 0.5},
+                                                        "y": {"scale": "yscale", "field": "amount", "offset": -2},
+                                                        "text": {"field": "amount"}
+                                                    }
+                                                    /*"update": {
+                                                        "x": {"scale": "xscale", "signal": "tooltip.category", "band": 0.5},
+                                                        "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -2},
+                                                        "text": {"signal": "tooltip.amount"},
+                                                        "fillOpacity": [
+                                                            {"test": "false", "value": 0},
+                                                            {"value": 1}
+                                                        ]
+                                                    }*/
+                                                }
+                                            }
+                                        ]
+                                    }
+                                var opt = {
+                                    "mode": "vega-lite"
+                                };
+                                vega.embed("#anon-user-retention", retentionGraph, opt, function(error, results) {});
+                            });
+                        });
+
+                    });
+                });
             });
             self.graphsLoaded = true;
         }

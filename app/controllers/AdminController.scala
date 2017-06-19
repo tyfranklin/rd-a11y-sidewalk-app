@@ -9,16 +9,17 @@ import com.vividsolutions.jts.geom.Coordinate
 import controllers.headers.ProvidesHeader
 import formats.json.TaskFormats._
 import models.audit.{AuditTaskInteraction, AuditTaskInteractionTable, AuditTaskTable, InteractionWithLabel}
-import models.daos.slick.DBTableDefinitions.UserTable
+import models.daos.slick.DBTableDefinitions.{UserTable, DBUser}
 import models.label.LabelTable.LabelMetadata
 import models.label.{LabelPointTable, LabelTable}
+import models.user.WebpageActivityTable
 import models.mission.MissionTable
 import models.region.RegionTable
 import models.street.{StreetEdge, StreetEdgeTable}
 import models.user.User
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
-import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 import play.extras.geojson
 
 import scala.concurrent.Future
@@ -331,5 +332,68 @@ class AdminController @Inject() (implicit val env: Environment[User, SessionAuth
     val featureCollection = Json.obj("type" -> "FeatureCollection", "features" -> features)
     Future.successful(Ok(featureCollection))
 
+  }
+
+  def getActivitiesOfActivityType(activityType: String) = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val activities = WebpageActivityTable.selectWebpageActivitesOfAnActivityType(activityType)
+      val activitiesJson: JsObject = WebpageActivityTable.webpageActivitiesToJson(activities)
+      Future.successful(Ok(activitiesJson))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+  def getNumActivitiesOfActivityType(activityType: String) = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val activities = WebpageActivityTable.selectWebpageActivitesOfAnActivityType(activityType).length
+      Future.successful(Ok(Json.toJson(activities)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+  def getAnonActivitiesOfActivityType(activityType: String) = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val activities = WebpageActivityTable.selectAnonWebpageActivitiesOfAnActivityType(activityType)
+      val activitiesJson: JsObject = WebpageActivityTable.webpageActivitiesToJson(activities)
+      Future.successful(Ok(activitiesJson))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+  def getNumAnonActivitiesOfActivityType(activityType: String) = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val activities = WebpageActivityTable.selectAnonWebpageActivitiesOfAnActivityType(activityType).length
+      Future.successful(Ok(Json.toJson(activities)))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+  def getAnonActivity() = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val webpageActivities = WebpageActivityTable.getAnonActivity()
+      val webpageActivitiesJson: JsObject = WebpageActivityTable.webpageActivitiesToJson(webpageActivities)
+      Future.successful(Ok(webpageActivitiesJson))
+    } else {
+      Future.successful(Redirect("/"))
+    }
+  }
+
+  def getAnonOnboardingIntroOutroCounts() = UserAwareAction.async { implicit request =>
+    if (isAdmin(request.identity)) {
+      val anonymousUser: DBUser = UserTable.find("anonymous").get
+      val anonInteractions: List[AuditTaskInteraction] = AuditTaskInteractionTable.selectAuditTaskInteractionsOfAUser(UUID.fromString(anonymousUser.userId))
+      val onboardingInteractions = anonInteractions.filter(x => x.action == "Onboarding_Transition")
+      val numIntroActions = onboardingInteractions.filter(_.note match{
+        case Some(x) => (x == "from:initialize") || (x == "onboardingTransition:initialize")
+        case None => false
+      }).length
+      val numOutroActions = onboardingInteractions.filter(_.note match{
+        case Some(x) => (x == "from:outro") || (x == "onboardingTransition:outro")
+        case None => false
+      }).length
+      Future.successful(Ok(Json.toJson(List(numIntroActions, numOutroActions))))
+    } else {
+      Future.successful((Redirect("/")))
+    }
   }
 }

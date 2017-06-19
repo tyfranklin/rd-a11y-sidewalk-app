@@ -13,6 +13,11 @@ $( window ).resize(function() {
     $('#vidembed').height(vidheight);
 });
 
+// Log when user leaves page
+$(window).addEventListener("beforeunload", function (event) {
+
+});
+
 function isScrolledIntoView(elem) {
     var docViewTop = $(window).scrollTop();
     var docViewBottom = docViewTop + $(window).height();

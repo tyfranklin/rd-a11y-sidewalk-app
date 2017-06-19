@@ -4,6 +4,8 @@ import java.util.UUID
 
 import models.utils.MyPostgresDriver.simple._
 import play.api.Play.current
+import play.api.libs.json.{JsObject, Json}
+import models.daos.slick.DBTableDefinitions.{DBUser, UserTable}
 
 case class WebpageActivity(webpageActivityId: Int, userId: String, ipAddress: String, description: String, timestamp: java.sql.Timestamp)
 
@@ -70,5 +72,35 @@ object WebpageActivityTable {
   def selectSignInCount(userId: UUID): Option[Integer] = db.withTransaction { implicit session =>
     val signInActivities: List[WebpageActivity] = activities.filter(_.userId === userId.toString).filter(_.activity === "SignIn").list
     Some(signInActivities.length)
+  }
+
+  def getAnonActivity(): List[WebpageActivity] = db.withTransaction { implicit session =>
+    val anonymousUser: DBUser = UserTable.find("anonymous").get
+    val viewIndexActivities: List[WebpageActivity] = activities
+        .filter(_.userId === anonymousUser.userId.toString)
+        .filter(x => ((x.activity === "Visit_Index") || (x.activity === "Visit_Audit")))
+        .list
+    val viewIndexActivities2: List[WebpageActivity] = viewIndexActivities.filterNot(
+      x => viewIndexActivities.exists(
+        y => (y.userId.toString == x.userId.toString) && (y.description == x.description) && (y.ipAddress == x.ipAddress) && (y.webpageActivityId < x.webpageActivityId)))
+    viewIndexActivities2
+  }
+
+  def selectWebpageActivitesOfAnActivityType(activityType: String): List[WebpageActivity] = db.withTransaction { implicit session =>
+    activities.filter(_.activity === activityType).list
+  }
+  def selectAnonWebpageActivitiesOfAnActivityType(activityType: String): List[WebpageActivity] = db.withTransaction { implicit session =>
+    val anonymousUser: DBUser = UserTable.find("anonymous").get
+    activities.filter(_.userId === anonymousUser.userId.toString).filter(_.activity === activityType).list
+  }
+
+  def webpageActivitiesToJson(webpageActivities: List[WebpageActivity]): JsObject = {
+    val activities: List[JsObject] = webpageActivities.map { webpageActivity =>
+      Json.obj(
+        "activity" -> webpageActivity.description,
+        "ip_address" -> webpageActivity.ipAddress
+      )
+    }
+    Json.obj("activities" -> activities)
   }
 }
