@@ -1215,98 +1215,82 @@ function Admin(_, $, c3, turf) {
                             console.log(onboardingInOut);
                             $.getJSON("/adminapi/numAnonActivities/First_Mission_Complete", function(firstMissionComplete){
                                 firstMissionComplete = 0;
-                                var retentionGraph =
-                                    {
-                                        "width": 800,
-                                        "height": 300,
-                                        "padding": 5,
+                                var retentionGraph = {
+                                    // If these values change, dx and dy in config must change as well
+                                    "width": 800,
+                                    "height": 300,
+                                    "padding": 5,
 
-                                        "data":
-                                            {
-                                                "name": "table",
-                                                "values": [
-                                                    //{"category": "Visit Index", "amount": numVisitIndexes/numVisitIndexes*100},
-                                                    {"index": 0, "category": "Sign In", "amount": numSignIns/numVisitIndexes*100},
-                                                    {"index": 1, "category": "Start Mapping", "amount": numVisitAudits/numVisitIndexes*100},
-                                                    {"index": 2, "category": "Begin Onboarding", "amount": onboardingInOut[0]/numVisitIndexes*100},
-                                                    {"index": 3, "category": "Complete Onboarding", "amount": onboardingInOut[1]/numVisitIndexes*100},
-                                                    {"index": 4, "category": "Complete First Mission", "amount": firstMissionComplete/numVisitIndexes*100}
-                                                ]
-                                            }
-                                        ,
+                                    "data": {
+                                        "name": "table",
+                                        // Sort doesn't work on tables with layers, which is used to display text and bars
+                                        // Use invisible unicode characters to trick vega-lite out of alphabetic order
+                                        "values": [
+                                            //{"category": "Visit Index", "amount": numVisitIndexes/numVisitIndexes*100},
+                                            {"category": "\u0020 Sign In", "amount": numSignIns/numVisitIndexes},
+                                            {"category": "\u00A0Start Mapping", "amount": numVisitAudits/numVisitIndexes},
+                                            {"category": "\u180eBegin Onboarding", "amount": onboardingInOut[0]/numVisitIndexes},
+                                            {"category": "\u2000Complete Onboarding", "amount": onboardingInOut[1]/numVisitIndexes},
+                                            {"category": "\u2001Complete First Mission", "amount": firstMissionComplete/numVisitIndexes}
+                                        ]
+                                    },
 
-                                        "scales": [
-                                            {
-                                                "name": "xscale",
-                                                "type": "band",
-                                                "domain": {"data": "table", "field": "category"},
-                                                "range": "width",
-                                                "padding": 0.05,
-                                                "round": true
-                                            },
-                                            {
-                                                "name": "yscale",
-                                                "domain": {"data": "table", "field": "amount"},
-                                                "nice": true,
-                                                "range": "height"
-                                            }
-                                        ],
-
-                                        "axes": [
-                                            {
-                                                "orient": "bottom",
-                                                "scale": "xscale",
-                                                "title": "Site Area"
-                                            },
-                                            {
-                                                "orient": "left",
-                                                "scale": "yscale",
-                                                "title": "Anonymous Users Retained (%)"
-                                            }
-                                        ],
-                                        "config": {
-                                            "axis": {
-                                                "labelFontSize": 14,
-                                                "titleFontSize": 16
+                                    "layer": [
+                                        {
+                                            "mark": "bar",
+                                            "encoding": {
+                                                "x": {
+                                                    "field": "category",
+                                                    "type": "ordinal",
+                                                    "axis": {
+                                                        "title": "Site Area",
+                                                        "labelAngle": 0
+                                                    }
+                                                },
+                                                "y": {
+                                                    "field": "amount",
+                                                    "type": "quantitative",
+                                                    "axis": {
+                                                        "title": "Anonymous Users Retained (%)",
+                                                        "format": "%"
+                                                    }
+                                                }
                                             }
                                         },
-                                        "marks": [
-                                            {
-                                                "type": "rect",
-                                                "from": {"data":"table"},
-                                                "encode": {
-                                                    "enter": {
-                                                        "x": {"scale": "xscale", "field": "category"},
-                                                        "width": {"scale": "xscale", "band": 1},
-                                                        "y": {"scale": "yscale", "field": "amount"},
-                                                        "y2": {"scale": "yscale", "value": 0}
+                                        {
+                                            "mark": "text",
+                                            "encoding": {
+                                                "x": {
+                                                    "field": "category",
+                                                    "type": "ordinal",
+                                                    "axis": {
+                                                        "title": "Site Area",
+                                                        "labelAngle":0
                                                     }
-                                                }
-                                            },
-                                            {
-                                                "type": "text",
-                                                "encode": {
-                                                    "enter": {
-                                                        "align": {"value": "center"},
-                                                        "baseline": {"value": "bottom"},
-                                                        "fill": {"value": "#333"},
-                                                        "x": {"scale": "xscale", "field": "index", "band": 0.5},
-                                                        "y": {"scale": "yscale", "field": "amount", "offset": -2},
-                                                        "text": {"field": "amount"}
-                                                    }
-                                                    /*"update": {
-                                                        "x": {"scale": "xscale", "signal": "tooltip.category", "band": 0.5},
-                                                        "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -2},
-                                                        "text": {"signal": "tooltip.amount"},
-                                                        "fillOpacity": [
-                                                            {"test": "false", "value": 0},
-                                                            {"value": 1}
-                                                        ]
-                                                    }*/
+                                                },
+                                                "y": {
+                                                    "field": "amount",
+                                                    "type": "quantitative"
+                                                },
+                                                "text": {
+                                                    "field": "amount",
+                                                    "type": "quantitative",
+                                                    "format": "%"
                                                 }
                                             }
-                                        ]
+                                        }
+                                    ],
+                                    "config": {
+                                        "axis": {
+                                            "labelFontSize": 14
+                                        },
+                                        "text": {
+                                            "dx": 72,
+                                            "dy": -5
+                                        }
                                     }
+
+                                };
                                 var opt = {
                                     "mode": "vega-lite"
                                 };
