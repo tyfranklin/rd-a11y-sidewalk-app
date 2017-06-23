@@ -1,5 +1,5 @@
 #choropleth {
-    width: 100%;
+    width: 1000px;
     height: 800px;
 }
 
@@ -10,6 +10,13 @@
     height:15px;
     width:10%;
     text-align:left;
-    font-size:8px;
+    font-size:14px;
     color:#808080;
+}
+
+.map-legends.wax-legends {
+    right: 70px;
+    top: 70px;
+    width: 325px;
+    max-width: 500px;
 }

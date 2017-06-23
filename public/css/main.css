@@ -622,7 +622,7 @@ video#bgvid {
 #choropleth-container {
     background-color: rgba(249, 241, 227, 1);
     width: 100%;
-    min-height: 1100px;
+    min-height: 1200px;
 }
 
 #content{

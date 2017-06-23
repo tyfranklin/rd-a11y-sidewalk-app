@@ -22,12 +22,13 @@ function Choropleth(_, $, turf) {
         maxBounds: bounds,
         maxZoom: 19,
         minZoom: 9,
+        zoomControl: false,
         legendControl: {
-            position: 'bottomleft'
+            position: 'topright'
         }
     })
         .fitBounds(bounds)
-        .setView([38.892, -77.038], 12);
+        .setView([38.892, -68.038], 12);
     choropleth.scrollWheelZoom.disable();
 
     L.mapbox.styleLayer('mapbox://styles/mapbox/light-v9').addTo(choropleth);
