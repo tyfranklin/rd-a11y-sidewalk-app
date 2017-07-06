@@ -20,6 +20,11 @@ NavigationModel.prototype.setPosition = function (lat, lng, callback) {
     if (this._mapService) this._mapService.setPosition(lat, lng, callback);
 };
 
+NavigationModel.prototype.setPositionByIdAndLatLng = function(panoId, lat, lng, callback){
+    if (this._mapService) this._mapService.setPositionByIdAndLatLng(panoId, lat, lng, callback);
+};
+
 NavigationModel.prototype.preparePovReset = function(){
     if (this._mapService) this._mapService.preparePovReset();
-}
+};
+

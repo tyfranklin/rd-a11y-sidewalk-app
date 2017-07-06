@@ -53,17 +53,91 @@ function TaskContainer (navigationModel, neighborhoodModel, streetViewService, s
 
         navigationModel.disableWalking();
 
+
+        /* Query panoramas for a grid of latLngs surrounding one goal latLng and choose the panorama
+        with the shortest distance to that goal
+         */
+        var getClosestPanorama = function(lat, lng, callback){
+            // Adjust queryRange and queryIter to change range and granularity of latLngs to query
+            var queryRange = 0.00004;
+            var queryIter  = 0.000008;
+            var totalIterations = Math.pow(Math.floor(queryRange*2/queryIter), 2);
+            var numIterations = 0;
+            var minDistance = -1;
+            var distance;
+            var minDistancePano = {};
+
+            if(streetViewService) {
+                navigationModel.disableWalking();
+                for (var itLat = lat - queryRange; itLat <= lat + queryRange; itLat += queryIter) {
+                for (var itLng = lng - queryRange; itLng <= lng + queryRange; itLng += queryIter) {
+                    var curLatLng = new google.maps.LatLng(itLat, itLng);
+                    streetViewService.getPanorama(
+                        {location: curLatLng, radius: STREETVIEW_MAX_DISTANCE, source: google.maps.StreetViewSource.OUTDOOR},
+                        function (streetViewPanoramaData, status) {
+                            numIterations++;
+                            if (status === google.maps.StreetViewStatus.OK) {
+                                distance = Math.pow((streetViewPanoramaData.location.latLng.lat() - lat), 2) +
+                                    Math.pow((streetViewPanoramaData.location.latLng.lng() - lng), 2);
+                                if (minDistance === -1) {
+                                    minDistance = distance;
+                                    minDistancePano = streetViewPanoramaData;
+                                }
+                                else if (distance < minDistance) {
+                                    minDistance = distance;
+                                    minDistancePano = streetViewPanoramaData;
+                                }
+                            }
+
+                            // Have queried everything in the grid
+                            if (numIterations === totalIterations) {
+                                if(minDistancePano === {}){
+                                    // no street view available in this range.
+                                    console.error("Error loading Street View imagery");
+                                    svl.tracker.push("PanoId_NotFound", {'Location': JSON.stringify(latLng)});
+                                    nextTaskIn.complete();
+                                    self.getFinishedAndInitNextTask(nextTaskIn);
+                                }
+                                else{
+                                    callback(minDistance, minDistancePano);
+                                }
+                            }
+                        }
+                    );
+                }
+                }
+            }
+            else{
+                console.error("streetViewService DNE");
+            }
+        };
+
+        getClosestPanorama(lat, lng, function(minDistance, minDistancePano){
+            console.log(minDistance, minDistancePano.location.pano);
+            navigationModel.enableWalking();
+            var panoId = minDistancePano.location.pano;
+            var lat = minDistancePano.location.latLng.lat();
+            var lng = minDistancePano.location.latLng.lng();
+            self.setCurrentTask(nextTaskIn);
+            navigationModel.setPositionByIdAndLatLng(panoId, lat, lng, function(){
+                navigationModel.preparePovReset();
+            });
+        });
+
+
+
         if (streetViewService) {
             streetViewService.getPanorama({location: latLng, radius: STREETVIEW_MAX_DISTANCE, source: google.maps.StreetViewSource.OUTDOOR},
                 function (streetViewPanoramaData, status) {
                     navigationModel.enableWalking();
                     if (status === google.maps.StreetViewStatus.OK) {
-                        lat = streetViewPanoramaData.location.latLng.lat();
-                        lng = streetViewPanoramaData.location.latLng.lng();
-                        self.setCurrentTask(nextTaskIn);
-                        navigationModel.setPosition(lat, lng, function(){
-                            navigationModel.preparePovReset();
-                        });
+                        gLat = streetViewPanoramaData.location.latLng.lat();
+                        gLng = streetViewPanoramaData.location.latLng.lng();
+                        //self.setCurrentTask(nextTaskIn);
+                        console.log(Math.pow((gLat - lat), 2) + Math.pow((gLng - lng), 2), streetViewPanoramaData.location.pano);
+                        //navigationModel.setPosition(lat, lng, function(){
+                        //    navigationModel.preparePovReset();
+                        //});
                     } else {
                         console.error("Error loading Street View imagery");
                         svl.tracker.push("PanoId_NotFound", {'Location': JSON.stringify(latLng)});
@@ -72,6 +146,7 @@ function TaskContainer (navigationModel, neighborhoodModel, streetViewService, s
                         self.getFinishedAndInitNextTask(nextTaskIn);
                     }
                 });
+
         }
     };
 

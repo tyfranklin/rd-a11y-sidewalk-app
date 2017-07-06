@@ -1443,8 +1443,10 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
 
                         // Sets new panorama
                         var newPano = streetViewPanoramaData.location.pano;
+                        var latLng = new google.maps.LatLng(streetViewPanoramaData.location.latLng.lat(), streetViewPanoramaData.location.latLng.lng());
 
                         self.setPano(newPano);
+                        //map.setCenter(latLng);
                         map.setCenter(gLatLng);
 
                         self.disableWalking();
@@ -1458,6 +1460,28 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
 
         return this;
     };
+
+    // For setting the position when the exact panorama is known
+    self.setPositionByIdAndLatLng = function(panoId, lat, lng, callback){
+        // Only set the location if walking is enabled
+        if (!status.disableWalking) {
+            var gLatLng = new google.maps.LatLng(lat, lng);
+
+            self.enableWalking();
+
+            self.setPano(panoId);
+            map.setCenter(gLatLng);
+
+            self.disableWalking();
+            window.setTimeout(function() { self.enableWalking(); }, 1000);
+
+            if(callback){
+                callback(panoId, lat, lng);
+            }
+        }
+
+        return this;
+    }
 
     /**
      * Stop blinking google maps
