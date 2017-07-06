@@ -3,8 +3,8 @@ function Choropleth(_, $, turf) {
 
 // Construct a bounding box for these maps that the user cannot move out of
 // https://www.mapbox.com/mapbox.js/example/v1.0.0/maxbounds/
-    var southWest = L.latLng(38.761, -77.262);
-    var northEast = L.latLng(39.060, -76.830);
+    var southWest = L.latLng(38.761, -77.272);
+    var northEast = L.latLng(38.997, -76.875);
     var bounds = L.latLngBounds(southWest, northEast);
 
 // var tileUrl = "https://a.tiles.mapbox.com/v4/kotarohara.mmoldjeh/page.html?access_token=pk.eyJ1Ijoia290YXJvaGFyYSIsImEiOiJDdmJnOW1FIn0.kJV65G6eNXs4ATjWCtkEmA#13/38.8998/-77.0638";
@@ -24,7 +24,7 @@ function Choropleth(_, $, turf) {
         minZoom: 9,
         zoomControl: false,
         legendControl: {
-            position: 'topright'
+            position: 'bottomright'
         }
     })
         .fitBounds(bounds)
