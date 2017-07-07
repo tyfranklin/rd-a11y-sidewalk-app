@@ -22,8 +22,11 @@ function InitialMissionInstruction(compass, mapService, neighborhoodContainer, p
             var distance = taskContainer.getCompletedTaskDistance(neighborhood.getProperty("regionId"), "kilometers");
             if (distance >= 0.025) {
                 var title = "Please check both sides of the street";
-                var message = "Remember, we would like you to check both sides of the street. " +
-                    "Please label accessibility issues like sidewalk obstacles and surface problems.";
+                var message = "Remember, we would like you to check both sides of the street. "+
+                    "Please label accessibility issues like sidewalk obstacles and surface problems."
+                        +"</br> <div id='placeholder' style='text-align: center;'> " + "" +
+                    '<img src="' + svl.rootDirectory + "img/misc/panning.gif" + '" ' +
+                    'style="width: 400px; height: 160px; margin: 5px auto;display:block;">' +"</div>";
                 tracker.push('PopUpShow_CheckBothSides');
 
                 popUpMessage.notify(title, message, function() {
