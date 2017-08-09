@@ -240,6 +240,12 @@ function MapService (canvas, neighborhoodModel, uiMap, params) {
             google.maps.event.addListener(svl.panorama, "position_changed", handlerPositionUpdate);
             google.maps.event.addListener(svl.panorama, "pano_changed", handlerPanoramaChange);
             google.maps.event.addListenerOnce(svl.panorama, "pano_changed", modeSwitchWalkClick);
+            google.maps.event.addDomListener(document.body,'keydown',function(e){
+                console.log(e);
+                if([187,189].indexOf(e.keyCode)>-1){
+                  e.stopPropagation();return false;
+                }
+            });
         }
 
         // Connect the map view and panorama view
