@@ -1,6 +1,7 @@
 package models.audit
 
 import java.sql.Timestamp
+import java.sql.Time
 import java.util.UUID
 
 import models.label._
@@ -31,6 +32,8 @@ case class InteractionWithLabel(auditTaskInteractionId: Int, auditTaskId: Int, a
                                 labelType: Option[String], labelLat: Option[Float], labelLng: Option[Float],
                                 canvasX: Int, canvasY: Int, canvasWidth: Int, canvasHeight: Int)
 
+case class AuditInteractionTimeStamp(timestamp: Option[Float])
+
 class AuditTaskInteractionTable(tag: Tag) extends Table[AuditTaskInteraction](tag, Some("sidewalk"), "audit_task_interaction") {
   def auditTaskInteractionId = column[Int]("audit_task_interaction_id", O.PrimaryKey, O.AutoInc)
   def auditTaskId = column[Int]("audit_task_id", O.NotNull)
@@ -53,11 +56,17 @@ class AuditTaskInteractionTable(tag: Tag) extends Table[AuditTaskInteraction](ta
  * Data access object for the audit_task_environment table
  */
 object AuditTaskInteractionTable {
+
   implicit val interactionWithLabelConverter = GetResult[InteractionWithLabel](r => {
     InteractionWithLabel(
       r.nextInt, r.nextInt, r.nextString, r.nextStringOption, r.nextFloatOption, r.nextFloatOption,
       r.nextFloatOption, r.nextFloatOption, r.nextIntOption, r.nextStringOption, r.nextTimestamp,
       r.nextStringOption, r.nextFloatOption, r.nextFloatOption, r.nextInt, r.nextInt, r.nextInt, r.nextInt)
+  })
+
+  implicit val auditInteractionTimeStamp = GetResult[AuditInteractionTimeStamp](r => {
+    AuditInteractionTimeStamp(
+      r.nextFloatOption)
   })
 
   implicit val auditTaskInteraction = GetResult[AuditTaskInteraction](r => {
@@ -100,6 +109,30 @@ object AuditTaskInteractionTable {
   def selectAuditTaskInteractionsOfAnActionType(actionType: String): List[AuditTaskInteraction] = db.withTransaction { implicit session =>
     auditTaskInteractions.filter(_.action === actionType).list
   }
+
+  /**
+    * Select all audit task interaction timestamps
+    * @return
+    */
+  def selectAllAuditTimes(anonymous: String): List[AuditInteractionTimeStamp] = db.withSession { implicit session =>
+    val selectAuditTimestampQuery = Q.query[String, AuditInteractionTimeStamp](
+      """|SELECT CAST(extract( second from SUM(diff) ) /60 + extract( minute from SUM(diff) ) + extract( hour from SUM(diff) ) * 60 AS decimal(10,2)) AS total_time_spent_auditing
+      |FROM (
+      |SELECT user_id, (timestamp - Lag(timestamp, 1) OVER(PARTITION BY user_id ORDER BY timestamp)) AS diff
+      |FROM (
+      |SELECT audit_task.user_id, audit_task_interaction.timestamp
+	    |FROM audit_task_interaction
+	    |LEFT JOIN audit_task ON audit_task.audit_task_id = audit_task_interaction.audit_task_id
+	    |WHERE action IN ('ViewControl_MouseDown','LabelingCanvas_MouseDown') AND audit_task.user_id <> ?
+      |) step1
+      |) step2
+      |WHERE diff < '00:05:00.000' AND diff > '00:00:00.000'
+      |GROUP BY user_id;""".stripMargin
+      )
+      val timestamps: List[AuditInteractionTimeStamp] = selectAuditTimestampQuery(anonymous).list
+      timestamps
+  }
+
 
   /**
     * Select all the audit task interactions of the specified user

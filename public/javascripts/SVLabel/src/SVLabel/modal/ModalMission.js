@@ -100,6 +100,7 @@ function ModalMission (missionContainer, neighborhoodContainer, uiModalMission, 
      */
     this.setMissionMessage = function (mission, neighborhood, parameters, callback) {
         // Set the title and the instruction of this mission.
+
         var label = mission.getProperty("label"),
             templateHTML,
             missionTitle = label in missionTitles ? missionTitles[label] : "Mission";
@@ -110,7 +111,7 @@ function ModalMission (missionContainer, neighborhoodContainer, uiModalMission, 
                 distanceString;
                 templateHTML = distanceMissionHTML;
 
-            if(missionContainer.isTheFirstMission()){
+            if (missionContainer.onlyMissionOnboardingDone() || missionContainer.isTheFirstMission()) {
                 missionTitle = "First Mission: " + missionTitle;
                 templateHTML = initialMissionHTML;
             }
