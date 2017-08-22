@@ -781,26 +781,47 @@ function Admin(_, $, c3, turf, difficultRegionIds) {
             });
 
             //Draw a chart of total time spent auditing
-            $.getJSON("/adminapi/audittimes", function (data) {
+            $.getJSON("/adminapi/audittimes", function (regData) {
+                  $.getJSON("/adminiapi/audittimesAnon", function (anonData) {
+                      var allTimes = [];
+                      var regTimes = [];
+                      var anonTimes = [];
+                      for (var i = 0; i < regData.length; i++) {
+                          regTimes.push({time: regData[i].time, binned: Math.min(200.0, regData[i].time)});
+                          allTimes.push({time: regData[i].time, binned: Math.min(200.0, regData[i].time)});
+                      }
+                      for (var i = 0; i < anonData.length; i++) {
+                          allTimes.push({time: anonData[i].time, binned: Math.min(200.0, anonData[i].time)});
+                          anonTimes.push({time: anonData[i].time, binned: Math.min(200.0, anonData[i].time)});
+                      }
 
-                var auditingTimes = [];
-                for(var i = 0; i<data.length; i++){
-                  auditingTimes.push({time: data[i].time, binned: Math.min(200.0, data[i].time)});
-                }
+                      var allStats = getSummaryStats(allTimes, "time");
+                      var regStats = getSummaryStats(regTimes, "time");
+                      var anonStats = getSummaryStats(anonTimes, "time");
 
-                var stats = getSummaryStats(auditingTimes, "time");
-                $("#auditing-std").html((stats.std).toFixed(2) + " minutes");
+                      var allHistOpts = {col:"binned", xAxisTitle:"Total Auditing Time (minutes) - All Users", yAxisTitle:"Counts (users)", xDomain:[0, 200],
+                                      width:250, height:250, binStep:10, legendOffset:-80};
+                      var regHistOpts = {col:"binned", xAxisTitle:"Total Auditing Time (minutes) - Registered Users", yAxisTitle:"Counts (users)", xDomain:[0, 200],
+                                      width:250, height:250, binStep:10, legendOffset:-80};
+                      var anonHistOpts = {col:"binned", xAxisTitle:"Total Auditing Time (minutes) - Anon Users", yAxisTitle:"Counts (users)", xDomain:[0, 200],
+                                      width:250, height:250, binStep:10, legendOffset:-80};
 
-                var histOpts = {col:"binned", xAxisTitle:"Total Auditing Time (minutes)", yAxisTitle:"Counts (users)", xDomain:[0, 200],
-                                width:400, height:250, binStep:10};
-                var chart = getVegaLiteHistogram(auditingTimes, stats.mean, stats.median, histOpts);
+                      var allChart = getVegaLiteHistogram(allTimes, allStats.mean, allStats.median, allHistOpts);
+                      var regChart = getVegaLiteHistogram(regTimes, regStats.mean, regStats.median, regHistOpts);
+                      var anonChart = getVegaLiteHistogram(anonTimes, anonStats.mean, anonStats.median, anonHistOpts);
 
-                vega.embed("#auditing-duration-time-histogram", chart, opt, function(error, results) {});;
+                      $("#all-audittimes-std").html((allStats.std).toFixed(2) + " Minutes");
+                      $("#reg-audittimes-std").html((regStats.std).toFixed(2) + " Minutes");
+                      $("#anon-audittimes-std").html((anonStats.std).toFixed(2) + " Minutes");
+
+                      var combinedChart = {"hconcat": [allChart, regChart, anonChart]};
+
+                      vega.embed("#auditing-duration-time-histogram", combinedChart, opt, function(error, results) {});
+                    });
             });
 
 
             $.getJSON('/adminapi/neighborhoodCompletionRate', function (data) {
-
                 // make a choropleth of neighborhood completion percentages
                 initializeChoroplethNeighborhoodPolygons(choropleth, data);
                 choropleth.legendControl.addLegend(document.getElementById('legend').innerHTML);
@@ -1049,7 +1070,7 @@ function Admin(_, $, c3, turf, difficultRegionIds) {
                     var combinedChart = {"hconcat": [allChart, regChart, anonChart]};
                     var combinedChartFiltered = {"hconcat": [allFilteredChart, regFilteredChart, anonChart]};
 
-                    vega.embed("#mission-count-chart", combinedChart, opt, function(error, results) {});
+                    vega.embed("#mission-count-chart", combinedChartFiltered, opt, function(error, results) {});
 
                     var checkbox = document.getElementById("mission-count-include-researchers-checkbox").addEventListener("click", function(cb) {
                         if (cb.srcElement.checked) {
@@ -1145,6 +1166,66 @@ function Admin(_, $, c3, turf, difficultRegionIds) {
                         vega.embed("#login-count-chart", filteredChart, opt, function(error, results) {});
                     }
                 });
+            });
+
+            // Creates chart showing how many audit page visits there are, how many people click via choropleth, how
+            // many click "start mapping" on navbar, and how many click "start mapping" on the landing page itself.
+            $.getJSON("/adminapi/webpageActivity/Visit_Audit", function(visitAuditEvents){
+            $.getJSON("/adminapi/webpageActivity/Click/module=StartMapping/location=Index", function(clickStartMappingMainIndexEvents){
+            $.getJSON("/adminapi/webpageActivity/Click/module=Choropleth/target=audit", function(choroplethClickEvents){
+            $.getJSON("/adminapi/webpageActivity/Click/module=StartMapping/location=Navbar/"+encodeURIComponent(encodeURIComponent("route=/")), function(clickStartMappingNavIndexEvents){
+                // Only consider events that take place after all logging was merged (timestamp equivalent to July 20, 2017 17:02:00)
+                // TODO switch this to make use of versioning on the backend once it is implemented...
+                // See: https://github.com/ProjectSidewalk/SidewalkWebpage/issues/653
+                var numVisitAudit = visitAuditEvents[0].filter(function(event){
+                    return event.timestamp > 1500584520000;
+                }).length;
+                var numClickStartMappingMainIndex = clickStartMappingMainIndexEvents[0].filter(function(event){
+                    return event.timestamp > 1500584520000;
+                }).length;
+                var numChoroplethClicks = choroplethClickEvents[0].filter(function(event){
+                    return event.timestamp > 1500584520000;
+                }).length;
+                var numClickStartMappingNavIndex = clickStartMappingNavIndexEvents[0].filter(function(event){
+                    return event.timestamp > 1500584520000;
+                }).length;
+
+                // Fill in values in "How users access Audit Page from Landing Page:" table
+                $("#audit-access-table-start-main").append(
+                    '<td style="text-align: right;">'+
+                        numClickStartMappingMainIndex+
+                    '</td>'+
+                    '<td style="text-align: right;">'+
+                        (parseInt(numClickStartMappingMainIndex)/parseInt(numVisitAudit)*100).toFixed(1)+'%'+
+                    '</td>'
+                );
+                $("#audit-access-table-start-nav").append(
+                    '<td style="text-align: right;">'+
+                        numClickStartMappingNavIndex+
+                    '</td>'+
+                    '<td style="text-align: right;">'+
+                        (parseInt(numClickStartMappingNavIndex)/parseInt(numVisitAudit)*100).toFixed(1)+'%'+
+                    '</td>'
+                );
+                $("#audit-access-table-choro").append(
+                    '<td style="text-align: right;">'+
+                        numChoroplethClicks+
+                    '</td>'+
+                    '<td style="text-align: right;">'+
+                        (parseInt(numChoroplethClicks)/parseInt(numVisitAudit)*100).toFixed(1)+'%'+
+                    '</td>'
+                );
+                $("#audit-access-table-total").append(
+                    '<td style="text-align: right;">'+
+                        numVisitAudit+
+                    '</td>'+
+                    '<td style="text-align: right;">'+
+                        '100.0%'+
+                    '</td>'
+                );
+            });
+            });
+            });
             });
             self.graphsLoaded = true;
         }
