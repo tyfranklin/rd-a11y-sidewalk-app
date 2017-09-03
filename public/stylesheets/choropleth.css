@@ -28,3 +28,7 @@
     -moz-box-sizing:content-box;
     box-sizing:content-box;
 }
+
+.leaflet-fade-anim .leaflet-popup {
+transition: none;
+}
