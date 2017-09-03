@@ -108,7 +108,8 @@ function AccessibilityChoropleth(_, $, turf, difficultRegionIds) {
                 compRate = -1.0,
                 milesLeft = -1.0,
                 url = "/audit/region/" + regionId,
-                popupContent = "";
+                popupContent = "",
+                tooltipContent = "";
             for (var i = 0; i < rates.length; i++) {
                 if (rates[i].region_id === feature.properties.region_id) {
                     compRate = Math.round(100.0 * rates[i].rate);
@@ -164,6 +165,8 @@ function AccessibilityChoropleth(_, $, turf, difficultRegionIds) {
                                     '<td><img src="/assets/javascripts/SVLabel/img/cursors/Cursor_Obstacle.png"></td>'+
                                     '<tr><td>'+ counts['NoSidewalk'] +'</td><td>'+ counts['NoCurbRamp'] +'</td><td>'+ counts['SurfaceProblem'] +'</td><td>'+ counts['Obstacle'] +'</td></tr></tbody></table></div>'
 
+                    tooltipContent = '<strong>' + regionName + '</strong>: ' + compRate + '\% Complete'
+
                     break;
                 }
             }
@@ -171,8 +174,18 @@ function AccessibilityChoropleth(_, $, turf, difficultRegionIds) {
             layers.push(layer);
 
             layer.on('mouseover', function (e) {
-                this.setStyle({opacity: 1.0, weight: 3, color: "#000"});
+                if(!this.getPopup().isOpen()){
+                    this.bindTooltip(tooltipContent, {direction: 'top'}).openTooltip();
+                }
+            });
+            layer.on('mouseout', function (e) {
+                this.closeTooltip();
+                this.unbindTooltip();
+            });
 
+            layer.on('mouseover', function (e) {
+                this.setStyle({opacity: 1.0, weight: 3, color: "#000"});
+                
             });
             layer.on('mouseout', function (e) {
                 for (var i = layers.length - 1; i >= 0; i--) {
