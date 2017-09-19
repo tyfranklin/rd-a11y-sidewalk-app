@@ -25,7 +25,7 @@ CREATE TABLE survey_question
   survey_category_option_id INT,
   survey_display_rank INT,
   deleted BOOLEAN NOT NULL DEFAULT FALSE,
-  survey_user_role_id INT NOT NULL DEFAULT 1,
+  survey_user_roles STRING ARRAY DEFAULT ARRAY[]::VARCHAR[];,
   required BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (survey_question_id),
   FOREIGN KEY (survey_category_option_id) REFERENCES survey_category_option(survey_category_option_id)
@@ -65,11 +65,11 @@ INSERT INTO survey_option VALUES (17, 4, 'For the money.', 2);
 INSERT INTO survey_option VALUES (18, 4, 'To help people.', 3);
 INSERT INTO survey_option VALUES (19, 4, 'Accessibility is an important cause', 4);
 
-INSERT INTO survey_question VALUES (1, 'How much did you enjoy this task?', 'radio', 1, 1, false, 1,true);
-INSERT INTO survey_question VALUES (2, 'How difficult did you find this task?', 'radio', 2, 2, false, 1, true);
-INSERT INTO survey_question VALUES (3, 'How well do you think you did on this task?', 'radio', 3, 3, false, 1, true);
-INSERT INTO survey_question VALUES (4, 'Why did you choose to contribute to Project Sidewalk?', 'free-text-feedback', NULL, 5, false, 1, true);
-INSERT INTO survey_question VALUES (5, 'Do you have any feedback for us?', 'free-text-feedback', NULL, 4, false, 1, false);
+INSERT INTO survey_question VALUES (1, 'How much did you enjoy this task?', 'radio', 1, 1, false, ['Turker'],true);
+INSERT INTO survey_question VALUES (2, 'How difficult did you find this task?', 'radio', 2, 2, false, ['Turker'], true);
+INSERT INTO survey_question VALUES (3, 'How well do you think you did on this task?', 'radio', 3, 3, false, ['Turker'], true);
+INSERT INTO survey_question VALUES (4, 'Why did you choose to contribute to Project Sidewalk?', 'free-text-feedback', NULL, 5, false, ['Turker'], true);
+INSERT INTO survey_question VALUES (5, 'Do you have any feedback for us?', 'free-text-feedback', NULL, 4, false, ['Turker'], false);
 
 
 create TABLE user_survey_text_submission

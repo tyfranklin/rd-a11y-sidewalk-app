@@ -33,7 +33,7 @@
 
                             <form id="surveyForm" method="post">
                                 <ol>
-                                @for(surveyQuestion <- SurveyQuestionTable.listAll){
+                                @for(surveyQuestion <- SurveyQuestionTable.listAllByUserRoles(user.get.roles.getOrElse(Seq("")))){
                                     <li>
                                     @if(surveyQuestion.required == true) {
                                         <h4 class="survey-question">@surveyQuestion.surveyQuestionText *</h4>

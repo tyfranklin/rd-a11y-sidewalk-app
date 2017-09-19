@@ -1,11 +1,12 @@
 package models.survey
 
 import models.utils.MyPostgresDriver.simple._
+import models.user.RoleTable
 import play.api.Play.current
 
 import scala.slick.lifted.ForeignKeyQuery
 
-case class SurveyQuestion(surveyQuestionId: Int, surveyQuestionText: String, surveyInputType: String, surveyCategoryOptionId: Option[Int], surveyDisplayRank: Option[Int], deleted: Boolean, surveyUserRoleId: Int, required: Boolean)
+case class SurveyQuestion(surveyQuestionId: Int, surveyQuestionText: String, surveyInputType: String, surveyCategoryOptionId: Option[Int], surveyDisplayRank: Option[Int], deleted: Boolean, surveyUserRoleId: Seq[String], required: Boolean)
 
 class SurveyQuestionTable(tag: Tag) extends Table[SurveyQuestion](tag, Some("sidewalk"), "survey_question") {
   def surveyQuestionId = column[Int]("survey_question_id", O.PrimaryKey, O.AutoInc)
@@ -14,10 +15,10 @@ class SurveyQuestionTable(tag: Tag) extends Table[SurveyQuestion](tag, Some("sid
   def surveyCategoryOptionId = column[Option[Int]]("survey_category_option_id", O.Nullable)
   def surveyDisplayRank = column[Option[Int]]("survey_display_rank", O.Nullable)
   def deleted = column[Boolean]("deleted", O.NotNull)
-  def surveyUserRoleId = column[Int]("survey_user_role_id",O.NotNull)
+  def surveyUserRoles = column[Seq[String]]("survey_user_roles",O.NotNull)
   def required = column[Boolean]("required", O.NotNull)
 
-  def * = (surveyQuestionId, surveyQuestionText, surveyInputType, surveyCategoryOptionId, surveyDisplayRank, deleted, surveyUserRoleId, required) <> ((SurveyQuestion.apply _).tupled, SurveyQuestion.unapply)
+  def * = (surveyQuestionId, surveyQuestionText, surveyInputType, surveyCategoryOptionId, surveyDisplayRank, deleted, surveyUserRoles, required) <> ((SurveyQuestion.apply _).tupled, SurveyQuestion.unapply)
   def survey_category_option: ForeignKeyQuery[SurveyCategoryOptionTable, SurveyCategoryOption] =
     foreignKey("survey_question_survey_category_option_id_fkey", surveyCategoryOptionId, TableQuery[SurveyCategoryOptionTable])(_.surveyCategoryOptionId)
 
@@ -27,6 +28,7 @@ object SurveyQuestionTable{
   val db = play.api.db.slick.DB
   val surveyQuestions = TableQuery[SurveyQuestionTable]
   val surveyOptions = TableQuery[SurveyOptionTable]
+  val roles = TableQuery[RoleTable]
 
   def getQuestionById(surveyQuestionId: Int): Option[SurveyQuestion] = db.withTransaction { implicit session =>
     surveyQuestions.filter(_.surveyQuestionId === surveyQuestionId).list.headOption
@@ -48,7 +50,21 @@ object SurveyQuestionTable{
   }
 
   def listAllByUserRoleId(userRoleId: Int): List[SurveyQuestion] = db.withTransaction { implicit session =>
-    surveyQuestions.filter(x => x.deleted === false && x.surveyUserRoleId === userRoleId).list
+    val sURole: Option[Int] = roles.filter(_.roleId === userRoleId).map(_.role).head
+    sURole match{
+      case Some(surveyUserRole) =>
+        surveyQuestions.filter(x => x.deleted === false && x.surveyUserRoles.contains(surveyUserRole)).list
+      case None =>
+        val empty: List[SurveyQuestion] = List()
+        empty
+    }
+  }
+
+  def listAllByUserRoles(userRoles: Seq[String]): List[SurveyQuestion] = db.withTransaction { implicit session =>
+    surveyQuestions.filter(x => x.deleted === false).filter{ x =>
+      val relevantRoles: Seq[String] = x.surveyUserRoles.intersect(userRoles)
+      relevantRoles.size > 0
+    }.list
   }
 
   def save(surveyQuestion: SurveyQuestion): Int = db.withTransaction { implicit session =>
