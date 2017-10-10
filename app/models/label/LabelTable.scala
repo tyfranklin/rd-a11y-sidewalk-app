@@ -6,6 +6,7 @@ import java.util.UUID
 import com.vividsolutions.jts.geom.LineString
 import models.audit.{AuditTask, AuditTaskEnvironmentTable, AuditTaskInteraction, AuditTaskTable}
 import models.region.RegionTable
+import models.user.UserRoleTable
 import models.utils.MyPostgresDriver.simple._
 import play.api.Play.current
 import play.api.libs.json.{JsObject, Json}
@@ -93,7 +94,7 @@ object LabelTable {
   } yield (_ate.ipAddress, _ate.auditTaskId, _at.taskStart, _at.taskEnd)
 
   val anonIps = anonUsersAudits.groupBy(_._1).map{case(ip,group)=>ip}
-
+  val turkerUsers = TableQuery[UserRoleTable].filter(_.roleId === 4)
 
   case class LabelCountPerDay(date: String, count: Int)
 
@@ -616,10 +617,27 @@ object LabelTable {
   }
 
   /**
+    * Select label counts per turker user
+    */
+  def getLabelCountsPerTurkerUser: List[(String, Int)] = db.withSession { implicit session =>
+
+    val turkerAudits = for {
+      (_audits, _users) <- completedAudits.innerJoin(turkerUsers).on(_.userId === _.userId)
+    } yield (_audits.auditTaskId, _users.userId)
+
+
+    val _labels = for {
+      (_tasks, _labels) <- turkerAudits.innerJoin(labelsWithoutDeleted).on(_._1 === _.auditTaskId)
+    } yield _tasks._2
+
+    // counts the number of tasks for each user
+    _labels.groupBy(l => l).map{ case (uid, group) => (uid, group.length)}.list
+  }
+
+  /**
     * Select label counts per anonymous user
     */
   def getLabelCountsPerAnonUser: List[(String, Int)] = db.withSession { implicit session =>
-
     // gets ip address and audit task id of all audits (possibly incomplete) done by anonymous users
     // TODO figure out how to select a distinct environment for each ip address, right now we get duplicates!!!
     val _anonAudits = for {

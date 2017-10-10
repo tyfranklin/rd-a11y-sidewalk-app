@@ -424,6 +424,14 @@ def getAnonAuditTimes() = UserAwareAction.async { implicit request =>
     Future.successful(Ok(json))
   }
 
+  def getAllTurkerUserLabelCounts = UserAwareAction.async { implicit request =>
+    val labelCounts = LabelTable.getLabelCountsPerTurkerUser
+    val json = Json.arr(labelCounts.map(x => Json.obj(
+      "user_id" -> x._1, "count" -> x._2, "is_researcher" -> UserRoleTable.researcherIds.contains(x._1)
+    )))
+    Future.successful(Ok(json))
+  }
+
   def getAllAnonUserLabelCounts = UserAwareAction.async { implicit request =>
     val labelCounts = LabelTable.getLabelCountsPerAnonUser
     val json = Json.arr(labelCounts.map(x => Json.obj(
