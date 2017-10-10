@@ -110,8 +110,25 @@ object UserDAOImpl {
   /*
    * Total number of contributing turker users
    */
-  def countTurkerUsers: Int = db.withTransaction { implicit session =>
-    turkerUsers.list.size
+  def countTurkerUsers: Int = db.withSession { implicit session =>
+    // TODO: Condense both calculations into one query and then use filters
+    val countQuery = Q.queryNA[(Int)](
+      """SELECT COUNT(DISTINCT(audit_task.user_id))
+        |  FROM sidewalk.audit_task
+        |INNER JOIN sidewalk.user
+        |  ON sidewalk.user.user_id = audit_task.user_id
+        |WHERE audit_task.user_id != (select user_id
+        |                              from sidewalk.user
+        |					                     where username = 'anonymous')
+        |			                         and audit_task.user_id =
+        |			                       (select user_id
+        |								     from sidewalk.user_role
+        |								     where sidewalk.user_role.role_id = 4
+        |                    and sidewalk.user_role.user_id=audit_task.user_id)
+        |								     and audit_task.completed = true""".stripMargin
+    )
+    val count = countQuery.list.head
+    count
   }
 
   /*
@@ -247,7 +264,7 @@ object UserDAOImpl {
         |			                     and audit_task.user_id =
         |			                       (select user_id
         |								     from sidewalk.user_role
-        |								     where sidewalk.user_role.role_id = 4)
+        |								     where sidewalk.user_role.role_id = 4 and sidewalk.user_role.user_id=audit_task.user_id)
         |								 and audit_task.completed = true""".stripMargin
     )
     val count = countQuery.list.head
@@ -329,7 +346,7 @@ object UserDAOImpl {
         |			                     and audit_task.user_id =
         |			                       (select user_id
         |								     from sidewalk.user_role
-        |								     where sidewalk.user_role.role_id = 4)
+        |								     where sidewalk.user_role.role_id = 4 and sidewalk.user_role.user_id=audit_task.user_id)
         |								 and audit_task.completed = true""".stripMargin
     )
     val count = countQuery.list.head
