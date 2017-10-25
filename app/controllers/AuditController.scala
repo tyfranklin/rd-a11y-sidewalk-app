@@ -53,10 +53,14 @@ class AuditController @Inject() (implicit val env: Environment[User, SessionAuth
         if (!UserCurrentRegionTable.isAssigned(user.userId)) {
           // Note: This condition is never true because a region is assigned immediately after the user signs up
           UserCurrentRegionTable.assignEasyRegion(user.userId)
+          print("Unassigned")
         }
 
         var region: Option[NamedRegion] = RegionTable.selectTheCurrentNamedRegion(user.userId)
+        println(s"\nCurrent Assigned Region: ${region.get.regionId} ${region.get.name}")
+        println(s"Next Region: $nextRegion")
 
+        // Get a region based on request parameter - easy/regular
         nextRegion match {
           case Some("easy") =>
             // Assign an easy region if the query string has nextRegion=easy
@@ -71,14 +75,16 @@ class AuditController @Inject() (implicit val env: Environment[User, SessionAuth
           case None =>
             ;
         }
+        println(s"After First Next Region Match: $nextRegion")
 
         // Check if a user still has tasks available in this region.
         if (!AuditTaskTable.isTaskAvailable(user.userId, region.get.regionId) ||
             !MissionTable.isMissionAvailable(user.userId, region.get.regionId)) {
-          //println("Executing when next is set to: " + nextRegion)
+          println("No missions/tasks available")
           UserCurrentRegionTable.assignNextRegion(user.userId)
           region = RegionTable.selectTheCurrentNamedRegion(user.userId)
         }
+        println(s"After no tasks/mission check: $nextRegion")
 
         nextRegion match {
           case Some("easy") | Some("regular") =>
@@ -88,10 +94,12 @@ class AuditController @Inject() (implicit val env: Environment[User, SessionAuth
             Future.successful(Redirect("/audit"))
           case None =>
             WebpageActivityTable.save(WebpageActivity(0, user.userId.toString, ipAddress, "Visit_Audit", timestamp))
+            println(s"Final Region ID: ${region.get.regionId} ${region.get.name}")
 
             val task: NewTask = if (region.isDefined) AuditTaskTable.selectANewTaskInARegion(region.get.regionId, user.userId)
             else AuditTaskTable.selectANewTask(user.userId)
             region = RegionTable.selectTheCurrentNamedRegion(user.userId)
+            println(s"RegionId: ${region.get.regionId} Select task: ${task}")
 
             Future.successful(Ok(views.html.audit("Project Sidewalk - Audit", Some(task), region, Some(user))))
         }
@@ -109,43 +117,6 @@ class AuditController @Inject() (implicit val env: Environment[User, SessionAuth
         }
     }
   }
-
-  /**
-    * Deprecated now: Main audit controller is being used for this
-    *
-    * Returns an audit page for an easy region, if any are available.
-    *
-    * @return
-    */
-  def auditNewEasyRegion = UserAwareAction.async { implicit request =>
-    val now = new DateTime(DateTimeZone.UTC)
-    val timestamp: Timestamp = new Timestamp(now.getMillis)
-    val ipAddress: String = request.remoteAddress
-
-    request.identity match {
-      case Some(user) =>
-        WebpageActivityTable.save(WebpageActivity(0, user.userId.toString, ipAddress, "Visit_Audit", timestamp))
-
-        UserCurrentRegionTable.assignEasyRegion(user.userId)
-
-        var region: Option[NamedRegion] = RegionTable.selectTheCurrentNamedRegion(user.userId)
-        region = RegionTable.selectTheCurrentNamedRegion(user.userId)
-
-        val task: NewTask =
-          if (region.isDefined) AuditTaskTable.selectANewTaskInARegion(region.get.regionId, user.userId)
-          else AuditTaskTable.selectANewTask(user.userId)
-        region = RegionTable.selectTheCurrentNamedRegion(user.userId)
-
-        Future.successful(Ok(views.html.audit("Project Sidewalk - Audit", Some(task), region, Some(user))))
-      case None =>
-        WebpageActivityTable.save(WebpageActivity(0, anonymousUser.userId.toString, ipAddress, "Visit_Audit", timestamp))
-
-        val region: Option[NamedRegion] = RegionTable.selectALeastAuditedEasyRegion
-        val task: NewTask = AuditTaskTable.selectANewTaskInARegion(region.get.regionId)
-        Future.successful(Ok(views.html.audit("Project Sidewalk - Audit", Some(task), region, None)))
-    }
-  }
-
 
   /**
     * Audit a given region
@@ -167,6 +138,7 @@ class AuditController @Inject() (implicit val env: Environment[User, SessionAuth
         UserCurrentRegionTable.update(user.userId, regionId)
 
         val task: NewTask = AuditTaskTable.selectANewTaskInARegion(regionId, user.userId)
+        println(s"RegionId: ${regionId} Select tasks is defined: ${task}")
         Future.successful(Ok(views.html.audit("Project Sidewalk - Audit", Some(task), region, Some(user))))
       case None =>
         WebpageActivityTable.save(WebpageActivity(0, anonymousUser.userId.toString, ipAddress, "Visit_Audit", timestamp))

@@ -352,6 +352,7 @@ object AuditTaskTable {
 
     // find a region that this street belongs to, and assign user to that region
     val regionId: Int = StreetEdgeRegionTable.selectNonDeletedByStreetEdgeId(edge._1).head.regionId
+    println(s"NewRegionId $regionId")
     UserCurrentRegionTable.update(user, regionId)
 
     // Increment the assignment count and return the task
@@ -413,7 +414,6 @@ object AuditTaskTable {
     val timestamp: Timestamp = new Timestamp(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime.getTime)
 
     val streetEdgesWithoutDeleted = streetEdges.filterNot(_.deleted)
-    val completedTasks = auditTasks.filter(_.completed)
 
     val edgesInRegion = for {
       _ser <- StreetEdgeRegionTable.streetEdgeRegionTable if _ser.regionId === regionId
@@ -455,7 +455,6 @@ object AuditTaskTable {
     val userId: String = user.toString
 
     val streetEdgesWithoutDeleted = streetEdges.filterNot(_.deleted)
-    val completedTasks = auditTasks.filter(x => x.userId === userId && x.completed)
 
     val edgesInRegion = for {
       _ser <- StreetEdgeRegionTable.streetEdgeRegionTable if _ser.regionId === regionId
@@ -489,6 +488,7 @@ object AuditTaskTable {
           // If the user has already audited all streets in the region, then the count would be null, so give them a
           // new task in a new region.
           case _ =>
+            println("No tasks available")
             selectANewTask(user)
         }
       // If the user has already audited all streets in the region, then the count would be null, so give them a
@@ -607,9 +607,11 @@ object AuditTaskTable {
     )
 
     val result: List[NewTask] = selectIncompleteTaskQuery((userId.toString, regionId)).list
+    println(s"Total number of tasks: ${result.size}")
     (for ((edgeId, tasks) <- result.groupBy(_.edgeId)) yield {
       val completedTasks = tasks.filter(_.completed)
       if (completedTasks.isEmpty) {
+        println(tasks.head)
         tasks.head
       } else {
         completedTasks.head
