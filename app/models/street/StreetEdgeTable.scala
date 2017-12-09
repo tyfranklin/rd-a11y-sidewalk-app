@@ -4,10 +4,10 @@ import java.sql.Timestamp
 import java.util.UUID
 import java.util.Calendar
 import java.text.SimpleDateFormat
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
-
 import com.vividsolutions.jts.geom.LineString
 import models.audit.{AuditTask, AuditTaskTable}
 import models.region.RegionTable
@@ -18,6 +18,7 @@ import models.utils.MyPostgresDriver
 import models.utils.MyPostgresDriver.simple._
 import org.postgresql.util.PSQLException
 import play.api.Play.current
+import play.api.Logger
 
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 
@@ -169,10 +170,12 @@ object StreetEdgeTable {
     * Get the audited distance in miles
     * Reference: http://gis.stackexchange.com/questions/143436/how-do-i-calculate-st-length-in-miles
     *
-    * @param auditCount
+    * @param auditCount The number of times a street must have been audited to count as "complete"
+    * @param userType One of All, Researcher, Turker, Registered, or Anonymous
+    * @param timePeriod One of All, Today, or Yesterday
     * @return
     */
-  def auditedStreetDistance(auditCount: Int, userType: String = "All"): Float = db.withSession { implicit session =>
+  def auditedStreetDistance(auditCount: Int, userType: String = "All", timePeriod: String = "All"): Float = db.withSession { implicit session =>
 
     val auditTaskQuery = userType match {
       case "All" => completedAuditTasks
@@ -180,12 +183,28 @@ object StreetEdgeTable {
       case "Turker" => turkerCompletedAuditTasks
       case "Registered" => regUserCompletedAuditTasks
       case "Anonymous" => anonCompletedAuditTasks
-      case _ => completedAuditTasks
+      case _ =>
+        Logger.warn("Entered user type not currently supported for calculating audited street distance.")
+        completedAuditTasks
+    }
+
+    val now: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))
+    val todayStart: ZonedDateTime = now.toLocalDate.atStartOfDay(ZoneId.of("UTC"))
+    val yesterdayStart: ZonedDateTime = todayStart.minusDays(1)
+    val todayStartStamp: Timestamp = new Timestamp(todayStart.toInstant.toEpochMilli)
+    val yesterdayStartStamp: Timestamp = new Timestamp(yesterdayStart.toInstant.toEpochMilli)
+    val filteredAuditTasksQuery = timePeriod match {
+      case "All" => auditTaskQuery
+      case "Today" => auditTaskQuery.filter(_.taskEnd > todayStartStamp)
+      case "Yesterday" => auditTaskQuery.filter(_.taskEnd > yesterdayStartStamp).filter(_.taskEnd < todayStartStamp)
+      case _ =>
+        Logger.warn("Entered time period not currently supported for calculating audited street distance.")
+        auditTaskQuery
     }
 
     val edges = for {
       _edges <- streetEdgesWithoutDeleted
-      _tasks <- auditTaskQuery if _tasks.streetEdgeId === _edges.streetEdgeId
+      _tasks <- filteredAuditTasksQuery if _tasks.streetEdgeId === _edges.streetEdgeId
     } yield _edges
 
     // Gets tuple of (street_edge_id, num_completed_audits)

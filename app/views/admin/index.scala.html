@@ -132,6 +132,12 @@
                             </tr>
 
                             <tr>
+                                <th>Distance</th>
+                                <th>@("%.1f".format(StreetEdgeTable.auditedStreetDistance(1))) miles</th>
+                                <th>@("%.1f".format(StreetEdgeTable.auditedStreetDistance(1, timePeriod = "Today"))) miles</th>
+                                <th>@AuditTaskTable.countCompletedAuditsYesterday</th>
+                            </tr>
+                            <tr>
                                 <th>Audits</th>
                                 <th>@AuditTaskTable.countCompletedAudits</th>
                                 <th>@AuditTaskTable.countCompletedAuditsToday</th>
