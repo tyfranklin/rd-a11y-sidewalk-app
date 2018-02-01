@@ -1,7 +1,4 @@
 # Tutorial source: https://semaphoreci.com/community/tutorials/dockerizing-a-java-play-application
-# First, we get the Ubuntu image using FROM. To pass any valid Unix commands to the container, we use RUN 
-# The -y flag runs the installation in a non-interactive mode, giving a yes answer to every question.
-# This creates a custom image
 
 FROM ubuntu:16.04
 
@@ -62,7 +59,7 @@ RUN wget https://downloads.typesafe.com/typesafe-activator/1.3.12/typesafe-activ
 # https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-an-ubuntu-14-04-server
 RUN curl -sL https://deb.nodesource.com/setup_4.x | sudo bash - && apt-get install -yq nodejs
 
-# Fix npm - not the latest version installed by apt-get
+# Get the latest version
 RUN npm install -g npm
 
 # Old Technique
@@ -72,9 +69,8 @@ RUN npm install -g npm
 # RUN make
 # RUN make install
 
-
 # Add the libraries to the PATH variable
-ENV PATH $PROJECT_HOME/envt/activator-dist-1.3.12/bin:$PROJECT_HOME/envt/sbt-1.1.0/bin:$PROJECT_HOME/envt/npm_install/bin:$PATH
+ENV PATH $PROJECT_HOME/envt/activator-dist-1.3.12/bin:$PROJECT_HOME/envt/sbt-1.1.0/bin:$PATH
 
 # Copies all the project git files to the app folder
 COPY . $PROJECT_HOME/app
@@ -92,7 +88,7 @@ RUN grunt
 # Expose the port 9000 of the container which will be used by the Play application for communication
 EXPOSE 9000
 
-# Start the server
-COPY ./docker-entrypoint.sh .
+# Deploy the server
+# COPY ./docker-entrypoint.sh .
 # ENTRYPOINT ["docker-entrypoint.sh"]
 
