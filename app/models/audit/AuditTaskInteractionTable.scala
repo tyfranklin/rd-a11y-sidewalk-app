@@ -143,7 +143,7 @@ def selectAllAuditTimes(): List[UserAuditTime] = db.withSession { implicit sessi
       |    FROM audit_task_interaction
       |    LEFT JOIN audit_task
       |       ON audit_task.audit_task_id = audit_task_interaction.audit_task_id
-      |    WHERE action = 'ViewControl_MouseDown'
+      |    WHERE action IN ('ViewControl_MouseDown', 'LabelingCanvas_MouseDown')
       |        AND audit_task.user_id <> ?
       |        AND audit_task.user_id NOT IN (SELECT user_id FROM user_role WHERE role_id > 1)
       |    ) user_audit_times
@@ -174,7 +174,7 @@ def selectAllAuditTimes(): List[UserAuditTime] = db.withSession { implicit sessi
         |           ON audit_task.user_id = user_role.user_id
         |         INNER JOIN sidewalk.role
         |           ON user_role.role_id = sidewalk.role.role_id
-        |       WHERE action = 'ViewControl_MouseDown'
+        |       WHERE action IN ('ViewControl_MouseDown', 'LabelingCanvas_MouseDown')
         |             AND sidewalk.role.role = ?
         |     ) user_audit_times
         |WHERE diff < '00:05:00.000' AND diff > '00:00:00.000'
@@ -202,15 +202,15 @@ def selectAllAnonAuditTimes(): List[UserAuditTime] = db.withSession { implicit s
       |    FROM audit_task_interaction
       |    LEFT JOIN audit_task ON audit_task.audit_task_id = audit_task_interaction.audit_task_id
       |    LEFT JOIN audit_task_environment ON audit_task.audit_task_id = audit_task_environment.audit_task_id
-      |    WHERE action = 'ViewControl_MouseDown'
-      |    AND audit_task.user_id = ?
-      |    AND ip_address IN
-      |    (
-      |        SELECT ip_address
-      |        FROM audit_task_environment
-      |        INNER JOIN audit_task ON audit_task.audit_task_id = audit_task_environment.audit_task_id
-      |        WHERE completed = true
-      |    )
+      |    WHERE action IN ('ViewControl_MouseDown', 'LabelingCanvas_MouseDown')
+      |        AND audit_task.user_id = ?
+      |        AND ip_address IN
+      |        (
+      |            SELECT ip_address
+      |            FROM audit_task_environment
+      |            INNER JOIN audit_task ON audit_task.audit_task_id = audit_task_environment.audit_task_id
+      |            WHERE completed = true
+      |        )
       |) user_audit_times
       |WHERE diff < '00:05:00.000' AND diff > '00:00:00.000'
       |GROUP BY ip_address;""".stripMargin
