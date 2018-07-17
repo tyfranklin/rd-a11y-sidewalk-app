@@ -515,6 +515,10 @@ function Admin(_, $, c3, turf, difficultRegionIds) {
         self.adminGSVLabelView = AdminGSVLabel();
     }
 
+    function initializeAdminLabelingTool() {
+        self.adminLabelingTool = AdminLabelSearch();
+    }
+
     function initializeLabelTable() {
         $('.labelView').click(function (e) {
             e.preventDefault();
@@ -1430,6 +1434,7 @@ function Admin(_, $, c3, turf, difficultRegionIds) {
 
     initializeLabelTable();
     initializeAdminGSVLabelView();
+    initializeAdminLabelingTool();
 
     self.clearMap = clearMap;
     self.redrawLabels = redrawLabels;
