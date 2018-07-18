@@ -49,8 +49,13 @@ function calculatePointPov (canvasX, canvasY, pov) {
     var asin = Math.asin;
 
     var fov = get3dFov(zoom) * PI / 180.0;
+    /*
     var width = svl.canvasWidth;
     var height = svl.canvasHeight;
+    */
+    // Hacky fix -- can't access svl stuff
+    var width = 720;
+    var height = 480;
 
     var h0 = heading * PI / 180.0;
     var p0 = pitch * PI / 180.0;

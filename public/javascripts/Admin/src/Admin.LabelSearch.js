@@ -4,7 +4,34 @@
  * @constructor
  */
 function AdminLabelSearch() {
-    var self = { className: "AdminLabelSearch" };
+    var self = {
+        adminPanoramaLabel: undefined,
+        className: "AdminLabelSearch",
+        modal: undefined,
+        panorama: undefined
+    };
+
+    function _attachListeners() {
+        if (typeof google != "undefined") {
+            console.log('google is defined');
+
+            /*
+            google.maps.event .addListener(self.panorama.panorama, "pov_changed", handlerPovChange);
+            google.maps.event.addListener(self.panorama.panorama, "position_changed", handlerPositionUpdate);
+            google.maps.event.addListener(self.panorama.panorama, "pano_changed", handlerPanoramaChange);
+            google.maps.event.addListenerOnce(self.panorama.panorama, "pano_changed", modeSwitchWalkClick);
+            */
+
+            self.panorama.panorama.addListener('pov_changed', function() {
+                console.log('pov changed');
+
+                // self.panorama.clearCanvas();
+                self.panorama.renderLabel(self.adminPanoramaLabel);
+                // call a function to adjust label position
+                // call a function to clear the screen
+            });
+        }
+    }
 
     /**
      * Creates a table that displays information about a label.
@@ -84,7 +111,12 @@ function AdminLabelSearch() {
      * @param labelMetadata     Data from a label's JSON file.
      */
     function _handleData(labelMetadata) {
+
         self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
+        if (self.panorama) {
+            self.panorama.panorama.set('clickToGo', true);
+            self.panorama.panorama.set('zoomControl', true);
+        }
 
         self.panorama.setPov({
             heading: labelMetadata['heading'],
@@ -92,10 +124,10 @@ function AdminLabelSearch() {
             zoom: labelMetadata['zoom']
         });
 
-        var adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
+        self.adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
             labelMetadata['canvas_x'], labelMetadata['canvas_y'],
             labelMetadata['canvas_width'], labelMetadata['canvas_height']);
-        self.panorama.renderLabel(adminPanoramaLabel);
+        self.panorama.renderLabel(self.adminPanoramaLabel);
 
         var labelDate = moment(new Date(labelMetadata['timestamp']));
         self.modalTimestamp.html(labelDate.format('MMMM Do YYYY, h:mm:ss') + " (" + labelDate.fromNow() + ")");
@@ -111,6 +143,7 @@ function AdminLabelSearch() {
         self.modalXCoord.html(labelMetadata['canvas_x']);
         self.modalYCoord.html(labelMetadata['canvas_y']);
 
+        console.log('refreshGSV');
         self.panorama.refreshGSV();
     }
 
@@ -120,7 +153,7 @@ function AdminLabelSearch() {
      */
     function showLabel(labelId) {
         _resetModal();
-
+        _attachListeners();
         self.modal.modal({
             'show': true
         });
@@ -129,7 +162,6 @@ function AdminLabelSearch() {
             _handleData(data);
         });
     }
-
 
     /**
      * Pull information from the Label information box when the submit button is clicked.
