@@ -5,14 +5,14 @@
  * @returns {{className: string}}
  * @constructor
  */
-function AdminPanorama(svHolder) {
-    var self = { className: "AdminPanorama" };
+function AdminPanoramaLabelSearch(svHolder) {
+    var self = { className: "AdminPanoramaLabelSearch" };
 
     /**
      * This function initializes the Panorama
      */
     function _init () {
-        console.log("Wrong pano");
+        console.log("Correct pano");
         self.svHolder = $(svHolder);
         self.svHolder.addClass("admin-panorama");
 
@@ -28,27 +28,10 @@ function AdminPanorama(svHolder) {
             height: self.svHolder.height()
         })[0];
 
-        // Where the labels are drawn
-        self.drawingCanvas = $("<canvas>").attr({
-            width: self.svHolder.width(),
-            height: self.svHolder.height()
-        }).css({
-
-            'z-index': 2,
-            'position': 'absolute',
-            'top': 0,
-            'left': 0,
-            'display': 'inline-block',
-            'width': self.svHolder.width(),
-            'height': self.svHolder.height()
-        })[0];
-
         // Add them to svHolder
-        self.svHolder.append($(self.panoCanvas), $(self.drawingCanvas));
+        self.svHolder.append($(self.panoCanvas));
 
-        self.ctx = self.drawingCanvas.getContext("2d");
-
-        self.panorama = typeof google != "undefined" ? new google.maps.StreetViewPanorama(self.panoCanvas, { mode: 'html4' }) : null;
+        self.panorama = new google.maps.StreetViewPanorama(self.panoCanvas, { mode: 'html4' });
         self.panoId = null;
 
         self.panoPov = {
@@ -64,7 +47,7 @@ function AdminPanorama(svHolder) {
             self.panorama.set('linksControl', false);
             self.panorama.set('navigationControl', false);
             self.panorama.set('panControl', false);
-            self.panorama.set('zoomControl', false);
+            self.panorama.set('zoomControl', true);
             self.panorama.set('keyboardShortcuts', false);
             self.panorama.set('motionTracking', false);
             self.panorama.set('motionTrackingControl', false);
@@ -107,7 +90,19 @@ function AdminPanorama(svHolder) {
      * @param label: instance of AdminPanoramaLabel
      * @returns {renderLabel}
      */
-    function renderLabel (label) {
+    function renderLabel (label, labelPOV) {
+
+        var labelMarker = new PanoMarker(
+            {
+                pano: self.panorama,
+                position: {heading: labelPOV['heading'], pitch: labelPOV['pitch']},
+                container: self.panoCanvas,
+                size: new google.maps.Size(18,18),
+                // icon: util.misc.getIconImagePaths(label.label_type).iconImagePath,
+                anchor: new google.maps.Point(16,32)
+            });
+
+        /*
         var x = (label.canvasX / label.originalCanvasWidth) * self.drawingCanvas.width;
         var y = (label.canvasY / label.originalCanvasHeight) * self.drawingCanvas.height;
 
@@ -125,12 +120,13 @@ function AdminPanorama(svHolder) {
         self.ctx.fillStyle = fillColor;
         self.ctx.fill();
         self.ctx.restore();
+        */
 
         return this;
     }
 
     function _clearCanvas () {
-        self.ctx.clearRect(0, 0, self.drawingCanvas.width, self.drawingCanvas.height);
+        // self.ctx.clearRect(0, 0, self.drawingCanvas.width, self.drawingCanvas.height);
     }
 
     /*

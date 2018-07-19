@@ -66,7 +66,7 @@ function AdminLabelSearch() {
                 '</div>'+
             '</div>');
 
-        self.panorama = AdminPanorama(self.modal.find("#svholder")[0]);
+        self.panorama = AdminPanoramaLabelSearch(self.modal.find("#svholder")[0]);
 
         self.modalTask = self.modal.find("#task");
         self.modalGSVPanoID = self.modal.find("#gsv-pano-id");
@@ -92,10 +92,15 @@ function AdminLabelSearch() {
             zoom: labelMetadata['zoom']
         });
 
+        var labelPOV = {
+            heading: labelMetadata['heading'],
+            pitch: labelMetadata['pitch']
+        }
+
         var adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
             labelMetadata['canvas_x'], labelMetadata['canvas_y'],
             labelMetadata['canvas_width'], labelMetadata['canvas_height']);
-        self.panorama.renderLabel(adminPanoramaLabel);
+        self.panorama.renderLabel(adminPanoramaLabel, labelPOV);
 
         var labelDate = moment(new Date(labelMetadata['timestamp']));
         self.modalTimestamp.html(labelDate.format('MMMM Do YYYY, h:mm:ss') + " (" + labelDate.fromNow() + ")");
