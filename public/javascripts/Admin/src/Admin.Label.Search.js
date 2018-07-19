@@ -14,57 +14,57 @@ function AdminLabelSearch() {
         self.modal =
             $('<div class="modal fade" id="labelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">'+
                 '<div class="modal-dialog" role="document" style="width: 390px">'+
-                    '<div class="modal-content">'+
-                        '<div class="modal-header">'+
-                            '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
-                            '<h4 class="modal-title" id="myModalLabel">Label</h4>'+
-                        '</div>'+
-                        '<div class="modal-body">'+
-                            '<div id="svholder" style="width: 360px; height:240px">'+
-                        ' </div>'+
-                        '<div class="modal-footer">'+
-                            '<table class="table table-striped" style="font-size:small; margin-bottom: 0">'+
-                                '<tr>'+
-                                    '<th>Audit Task</th>' +
-                                    '<td id="task"></td>' +
-                                '</tr>'+
-                                '<tr>'+
-                                    '<th>GSV Pano ID</th>' +
-                                    '<td id="gsv-pano-id"></td>' +
-                                '</tr>'+
-                                '<tr>'+
-                                    '<th>Label Type</th>'+
-                                    '<td id="label-type-value"></td>'+
-                                '</tr>'+
-                                '<tr>' +
-                                    '<th>Severity</th>'+
-                                    '<td id="severity"></td>'+
-                                '</tr>'+
-                                '<tr>' +
-                                    '<th>Description</th>'+
-                                    '<td id="label-description"></td>'+
-                                '</tr>'+
-                                '<tr>' +
-                                    '<th>Temporary</th>'+
-                                    '<td id="temporary"></td>'+
-                                '</tr>'+
-                                '<tr>' +
-                                    '<th>X coordinate</th>'+
-                                    '<td id="x-coordinate"></td>'+
-                                '</tr>'+
-                                '<tr>'+
-                                    '<th>Y coordinate</th>'+
-                                    '<td id="y-coordinate"></td>'+
-                                '</tr>'+
-                                '<tr>'+
-                                    '<th>Time Submitted</th>'+
-                                    '<td id="timestamp" colspan="3"></td>'+
-                                '</tr>'+
-                            '</table>'+
-                        '</div>'+
-                    '</div>'+
+                '<div class="modal-content">'+
+                '<div class="modal-header">'+
+                '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+                '<h4 class="modal-title" id="myModalLabel">Label</h4>'+
                 '</div>'+
-            '</div>');
+                '<div class="modal-body">'+
+                '<div id="svholder" style="width: 360px; height:240px">'+
+                ' </div>'+
+                '<div class="modal-footer">'+
+                '<table class="table table-striped" style="font-size:small; margin-bottom: 0">'+
+                '<tr>'+
+                '<th>Audit Task</th>' +
+                '<td id="task"></td>' +
+                '</tr>'+
+                '<tr>'+
+                '<th>GSV Pano ID</th>' +
+                '<td id="gsv-pano-id"></td>' +
+                '</tr>'+
+                '<tr>'+
+                '<th>Label Type</th>'+
+                '<td id="label-type-value"></td>'+
+                '</tr>'+
+                '<tr>' +
+                '<th>Severity</th>'+
+                '<td id="severity"></td>'+
+                '</tr>'+
+                '<tr>' +
+                '<th>Description</th>'+
+                '<td id="label-description"></td>'+
+                '</tr>'+
+                '<tr>' +
+                '<th>Temporary</th>'+
+                '<td id="temporary"></td>'+
+                '</tr>'+
+                '<tr>' +
+                '<th>X coordinate</th>'+
+                '<td id="x-coordinate"></td>'+
+                '</tr>'+
+                '<tr>'+
+                '<th>Y coordinate</th>'+
+                '<td id="y-coordinate"></td>'+
+                '</tr>'+
+                '<tr>'+
+                '<th>Time Submitted</th>'+
+                '<td id="timestamp" colspan="3"></td>'+
+                '</tr>'+
+                '</table>'+
+                '</div>'+
+                '</div>'+
+                '</div>'+
+                '</div>');
 
         self.panorama = AdminPanoramaLabelSearch(self.modal.find("#svholder")[0]);
 

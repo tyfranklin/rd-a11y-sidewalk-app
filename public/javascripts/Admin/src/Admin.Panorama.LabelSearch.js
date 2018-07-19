@@ -8,6 +8,16 @@
 function AdminPanoramaLabelSearch(svHolder) {
     var self = { className: "AdminPanoramaLabelSearch" };
 
+    var icons = {
+        CurbRamp : 'assets/javascripts/SVLabel/img/cursors/Cursor_CurbRamp.png',
+        NoCurbRamp : 'assets/javascripts/SVLabel/img/cursors/Cursor_NoCurbRamp.png',
+        Obstacle : 'assets/javascripts/SVLabel/img/cursors/Cursor_Obstacle.png',
+        SurfaceProblem : 'assets/javascripts/SVLabel/img/cursors/Cursor_SurfaceProblem.png',
+        Other : 'assets/javascripts/SVLabel/img/cursors/Cursor_Other.png',
+        Occlusion : 'assets/javascripts/SVLabel/img/cursors/Cursor_Other.png',
+        NoSidewalk : 'assets/javascripts/SVLabel/img/cursors/Cursor_NoSidewalk.png'
+    }
+
     /**
      * This function initializes the Panorama
      */
@@ -91,36 +101,18 @@ function AdminPanoramaLabelSearch(svHolder) {
      * @returns {renderLabel}
      */
     function renderLabel (label, labelPOV) {
+        var url = icons[label.label_type];
+        console.log(url);
 
         var labelMarker = new PanoMarker(
             {
                 pano: self.panorama,
                 position: {heading: labelPOV['heading'], pitch: labelPOV['pitch']},
                 container: self.panoCanvas,
-                size: new google.maps.Size(18,18),
-                // icon: util.misc.getIconImagePaths(label.label_type).iconImagePath,
-                anchor: new google.maps.Point(16,32)
+                size: new google.maps.Size(30,30),
+                anchor: new google.maps.Point(10, 10),
+                icon: url
             });
-
-        /*
-        var x = (label.canvasX / label.originalCanvasWidth) * self.drawingCanvas.width;
-        var y = (label.canvasY / label.originalCanvasHeight) * self.drawingCanvas.height;
-
-        var colorScheme = util.misc.getLabelColors();
-        var fillColor = (label.label_type in colorScheme) ? colorScheme[label.label_type].fillStyle : "rgb(128, 128, 128)";
-
-
-        self.ctx.save();
-        self.ctx.strokeStyle = 'rgba(255,255,255,1)';
-        self.ctx.lineWidth = 3;
-        self.ctx.beginPath();
-        self.ctx.arc(x, y, 6, 2 * Math.PI, 0, true);
-        self.ctx.closePath();
-        self.ctx.stroke();
-        self.ctx.fillStyle = fillColor;
-        self.ctx.fill();
-        self.ctx.restore();
-        */
 
         return this;
     }
