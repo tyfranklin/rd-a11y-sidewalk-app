@@ -6,7 +6,11 @@
  * @constructor
  */
 function AdminPanoramaLabelSearch(svHolder) {
-    var self = { className: "AdminPanoramaLabelSearch" };
+    var self = {
+        className: "AdminPanoramaLabelSearch",
+        labelMarker: undefined,
+        panorama: undefined
+    };
 
     var icons = {
         CurbRamp : 'assets/javascripts/SVLabel/img/cursors/Cursor_CurbRamp.png',
@@ -30,8 +34,6 @@ function AdminPanoramaLabelSearch(svHolder) {
         if(self.svHolder.css('position') != "absolute" && self.svHolder.css('position') != "relative")
             self.svHolder.css('position', 'relative');
 
-
-
         // GSV will be added to panoCanvas
         self.panoCanvas = $("<div id='pano'>").css({
             width: self.svHolder.width(),
@@ -43,12 +45,6 @@ function AdminPanoramaLabelSearch(svHolder) {
 
         self.panorama = new google.maps.StreetViewPanorama(self.panoCanvas, { mode: 'html4' });
         self.panoId = null;
-
-        self.panoPov = {
-            heading: null,
-            pitch: null,
-            zoom: null
-        };
 
         if (self.panorama) {
             self.panorama.set('addressControl', false);
@@ -74,7 +70,6 @@ function AdminPanoramaLabelSearch(svHolder) {
         if(self.panoId != newId) {
             self.panorama.setPano(newId);
             self.panoId = newId;
-            _clearCanvas();
             self.refreshGSV();
         }
         return this;
@@ -83,15 +78,19 @@ function AdminPanoramaLabelSearch(svHolder) {
     /**
      * @param options: The options object should have "heading", "pitch" and "zoom" keys
      */
-    function setPov(newPov) {
-        //Only update the pov if it is different
-        if(newPov.heading != self.panoPov.heading || newPov.pitch != self.panoPov.pitch
-            || newPov.zoom != self.panoPov.zoom) {
-            self.panorama.setPov(newPov);
-            self.panoPov = newPov;
-            _clearCanvas();
-            self.refreshGSV();
-        }
+    function setPov(coords) {
+        self.panorama.set('pov', {heading: coords['heading'], pitch: coords['pitch']});
+        self.panorama.set('zoom', coords['zoom']);
+
+        // console.log('Panorama POV: ' + self.panorama.getPov().heading + ', ' + self.panorama.getPov().pitch);
+        // self.refreshGSV();
+        return this;
+    }
+
+    function setLatLng(coords) {
+        self.panorama.set('position', new google.maps.LatLng(coords['lat'], coords['lng']));
+        // console.log('Panorama position: ' + self.panorama.getPosition());
+        // self.refreshGSV();
         return this;
     }
 
@@ -100,25 +99,39 @@ function AdminPanoramaLabelSearch(svHolder) {
      * @param label: instance of AdminPanoramaLabel
      * @returns {renderLabel}
      */
-    function renderLabel (label, labelPOV) {
+    function renderLabel (label, labelCoords) {
+        console.log('rendering panomarker');
         var url = icons[label.label_type];
         console.log(url);
+        // console.log('Lat: ' + labelCoords['lat'] + ', Lng: ' + labelCoords['lng']);
+        // console.log('Heading: ' + labelCoords['heading'] + ', Pitch: ' + labelCoords['pitch']);
 
-        var labelMarker = new PanoMarker(
-            {
+        // PanoMarker -- can't set latlng
+        /*
+        this.labelMarker = new PanoMarker({
                 pano: self.panorama,
-                position: {heading: labelPOV['heading'], pitch: labelPOV['pitch']},
+                position: {heading: labelCoords['heading'], pitch: labelCoords['pitch']},
                 container: self.panoCanvas,
                 size: new google.maps.Size(30,30),
-                anchor: new google.maps.Point(10, 10),
                 icon: url
             });
+        */
 
+        this.labelMarker = new google.maps.Marker ({
+            map: self.panorama,
+            position: new google.maps.LatLng(labelCoords['lat'], labelCoords['lng']),
+            size: new google.maps.Size(15, 15),
+            icon: url,
+            draggable: true
+        });
+
+
+        /*
+        console.log('Panorama POV: ' + self.panorama.getPov().heading + ', ' + self.panorama.getPov().pitch);
+        console.log('Panorama position: ' + self.panorama.getPosition());
+        console.log('Label: ' + labelMarker.getPosition().heading + ', ' + self.panorama.getPov().pitch);
+        */
         return this;
-    }
-
-    function _clearCanvas () {
-        // self.ctx.clearRect(0, 0, self.drawingCanvas.width, self.drawingCanvas.height);
     }
 
     /*
@@ -136,6 +149,7 @@ function AdminPanoramaLabelSearch(svHolder) {
     self.changePanoId = changePanoId;
     self.setPov = setPov;
     self.renderLabel = renderLabel;
+    self.setLatLng = setLatLng;
     self.refreshGSV = refreshGSV;
     return self;
 }

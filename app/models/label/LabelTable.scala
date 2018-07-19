@@ -105,7 +105,7 @@ object LabelTable {
 
   case class LabelCountPerDay(date: String, count: Int)
 
-  case class LabelMetadata(labelId: Int, gsvPanoramaId: String, heading: Float, pitch: Float, zoom: Int,
+  case class LabelMetadata(labelId: Int, gsvPanoramaId: String, lat: Float, lng: Float, heading: Float, pitch: Float, zoom: Int,
                            canvasX: Int, canvasY: Int, canvasWidth: Int, canvasHeight: Int,
                            auditTaskId: Int,
                            userId: String, username: String,
@@ -260,10 +260,10 @@ object LabelTable {
 
   // TODO translate the following three queries to Slick
   def retrieveLabelMetadata(takeN: Int): List[LabelMetadata] = db.withSession { implicit session =>
-    val selectQuery = Q.query[Int, (Int, String, Float, Float, Int, Int, Int, Int, Int,
+    val selectQuery = Q.query[Int, (Int, String, Float, Float, Float, Float, Int, Int, Int, Int, Int,
       Int, String, String, Option[java.sql.Timestamp], String, String, Option[Int], Boolean,
       Option[String])](
-      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
+      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.lat, lp.lng, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
         |       lp.canvas_width, lp.canvas_height, lb1.audit_task_id, u.user_id, u.username, lb1.time_created,
         |       lb_big.label_type, lb_big.label_type_desc, lb_big.severity, lb_big.temp_problem, lb_big.description
         |	FROM sidewalk.label as lb1, sidewalk.audit_task as at,
@@ -290,10 +290,10 @@ object LabelTable {
   }
 
   def retrieveLabelMetadata(takeN: Int, userId: String): List[LabelMetadata] = db.withSession { implicit session =>
-    val selectQuery = Q.query[(String, Int),(Int, String, Float, Float, Int, Int, Int, Int, Int,
+    val selectQuery = Q.query[(String, Int),(Int, String, Float, Float, Float, Float, Int, Int, Int, Int, Int,
       Int, String, String, Option[java.sql.Timestamp], String, String, Option[Int], Boolean,
       Option[String])](
-      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
+      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.lat, lp.lng, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
         |       lp.canvas_width, lp.canvas_height, lb1.audit_task_id, u.user_id, u.username, lb1.time_created,
         |       lb_big.label_type, lb_big.label_type_desc, lb_big.severity, lb_big.temp_problem, lb_big.description
         |	FROM sidewalk.label as lb1, sidewalk.audit_task as at,
@@ -321,10 +321,10 @@ object LabelTable {
   }
 
   def retrieveSingleLabelMetadata(labelId: Int): LabelMetadata = db.withSession { implicit session =>
-    val selectQuery = Q.query[Int,(Int, String, Float, Float, Int, Int, Int, Int, Int,
+    val selectQuery = Q.query[Int,(Int, String, Float, Float, Float, Float, Int, Int, Int, Int, Int,
       Int, String, String, Option[java.sql.Timestamp], String, String, Option[Int], Boolean,
       Option[String])](
-      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
+      """SELECT lb1.label_id, lb1.gsv_panorama_id, lp.lat, lp.lng, lp.heading, lp.pitch, lp.zoom, lp.canvas_x, lp.canvas_y,
         |       lp.canvas_width, lp.canvas_height, lb1.audit_task_id, u.user_id, u.username, lb1.time_created,
         |       lb_big.label_type, lb_big.label_type_desc, lb_big.severity, lb_big.temp_problem, lb_big.description
         |	FROM sidewalk.label as lb1, sidewalk.audit_task as at,
@@ -360,6 +360,8 @@ object LabelTable {
     Json.obj(
       "label_id" -> labelMetadata.labelId,
       "gsv_panorama_id" -> labelMetadata.gsvPanoramaId,
+      "lat" -> labelMetadata.lat,
+      "lng" -> labelMetadata.lng,
       "heading" -> labelMetadata.heading,
       "pitch" -> labelMetadata.pitch,
       "zoom" -> labelMetadata.zoom,

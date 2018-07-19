@@ -15,52 +15,44 @@ function AdminLabelSearch() {
             $('<div class="modal fade" id="labelModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">'+
                 '<div class="modal-dialog" role="document" style="width: 390px">'+
                 '<div class="modal-content">'+
-                '<div class="modal-header">'+
-                '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
-                '<h4 class="modal-title" id="myModalLabel">Label</h4>'+
-                '</div>'+
-                '<div class="modal-body">'+
-                '<div id="svholder" style="width: 360px; height:240px">'+
-                ' </div>'+
-                '<div class="modal-footer">'+
-                '<table class="table table-striped" style="font-size:small; margin-bottom: 0">'+
-                '<tr>'+
-                '<th>Audit Task</th>' +
-                '<td id="task"></td>' +
-                '</tr>'+
-                '<tr>'+
-                '<th>GSV Pano ID</th>' +
-                '<td id="gsv-pano-id"></td>' +
-                '</tr>'+
-                '<tr>'+
-                '<th>Label Type</th>'+
-                '<td id="label-type-value"></td>'+
-                '</tr>'+
-                '<tr>' +
-                '<th>Severity</th>'+
-                '<td id="severity"></td>'+
-                '</tr>'+
-                '<tr>' +
-                '<th>Description</th>'+
-                '<td id="label-description"></td>'+
-                '</tr>'+
-                '<tr>' +
-                '<th>Temporary</th>'+
-                '<td id="temporary"></td>'+
-                '</tr>'+
-                '<tr>' +
-                '<th>X coordinate</th>'+
-                '<td id="x-coordinate"></td>'+
-                '</tr>'+
-                '<tr>'+
-                '<th>Y coordinate</th>'+
-                '<td id="y-coordinate"></td>'+
-                '</tr>'+
-                '<tr>'+
-                '<th>Time Submitted</th>'+
-                '<td id="timestamp" colspan="3"></td>'+
-                '</tr>'+
-                '</table>'+
+                    '<div class="modal-header">'+
+                        '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+                        '<h4 class="modal-title" id="myModalLabel">Label</h4>'+
+                    '</div>'+
+                    '<div class="modal-body">'+
+                        '<div id="svholder" style="width: 360px; height:240px">'+
+                        ' </div>'+
+                    '<div class="modal-footer">'+
+                        '<table class="table table-striped" style="font-size:small; margin-bottom: 0">'+
+                            '<tr>'+
+                                '<th>Audit Task</th>' +
+                                '<td id="task"></td>' +
+                            '</tr>'+
+                            '<tr>'+
+                                '<th>GSV Pano ID</th>' +
+                                '<td id="gsv-pano-id"></td>' +
+                            '</tr>'+
+                            '<tr>'+
+                                '<th>Label Type</th>'+
+                                '<td id="label-type-value"></td>'+
+                            '</tr>'+
+                            '<tr>' +
+                                '<th>Severity</th>'+
+                                '<td id="severity"></td>'+
+                            '</tr>'+
+                            '<tr>' +
+                                '<th>Description</th>'+
+                                '<td id="label-description"></td>'+
+                            '</tr>'+
+                            '<tr>' +
+                                '<th>Temporary</th>'+
+                                '<td id="temporary"></td>'+
+                            '</tr>'+
+                            '<tr>'+
+                                '<th>Time Submitted</th>'+
+                                '<td id="timestamp" colspan="3"></td>'+
+                            '</tr>'+
+                        '</table>'+
                 '</div>'+
                 '</div>'+
                 '</div>'+
@@ -74,8 +66,6 @@ function AdminLabelSearch() {
         self.modalSeverity = self.modal.find("#severity");
         self.modalDescription = self.modal.find("#label-description");
         self.modalTemporary = self.modal.find("#temporary");
-        self.modalXCoord = self.modal.find("#x-coordinate");
-        self.modalYCoord = self.modal.find("#y-coordinate");
         self.modalTimestamp = self.modal.find("#timestamp");
     }
 
@@ -84,23 +74,24 @@ function AdminLabelSearch() {
      * @param labelMetadata     Data from a label's JSON file.
      */
     function _handleData(labelMetadata) {
-        self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
-
-        self.panorama.setPov({
+        var labelCoords = {
+            lat: labelMetadata['lat'],
+            lng: labelMetadata['lng'],
             heading: labelMetadata['heading'],
             pitch: labelMetadata['pitch'],
             zoom: labelMetadata['zoom']
-        });
+        };
 
-        var labelPOV = {
-            heading: labelMetadata['heading'],
-            pitch: labelMetadata['pitch']
-        }
+        self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
+        self.panorama.setLatLng(labelCoords);
+        self.panorama.setPov(labelCoords);
 
         var adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
             labelMetadata['canvas_x'], labelMetadata['canvas_y'],
             labelMetadata['canvas_width'], labelMetadata['canvas_height']);
-        self.panorama.renderLabel(adminPanoramaLabel, labelPOV);
+
+
+        self.panorama.renderLabel(adminPanoramaLabel, labelCoords);
 
         var labelDate = moment(new Date(labelMetadata['timestamp']));
         self.modalTimestamp.html(labelDate.format('MMMM Do YYYY, h:mm:ss') + " (" + labelDate.fromNow() + ")");
@@ -113,8 +104,11 @@ function AdminLabelSearch() {
         self.modalSeverity.html(labelMetadata['severity'] != null ? labelMetadata['severity'] : "No severity");
         self.modalDescription.html(labelMetadata['description'] != null ? labelMetadata['description'] : "No description");
         self.modalTemporary.html(labelMetadata['temporary'] ? "True": "False");
-        self.modalXCoord.html(labelMetadata['canvas_x']);
-        self.modalYCoord.html(labelMetadata['canvas_y']);
+
+
+        console.log('Panorama POV: ' + self.panorama.panorama.getPov().heading + ', ' + self.panorama.panorama.getPov().pitch);
+        console.log('Panorama position: ' + self.panorama.panorama.getPosition());
+        console.log('Label marker position: ' + self.panorama.labelMarker.getPosition().heading + ', ' + self.panorama.labelMarker.getPosition().pitch);
 
         self.panorama.refreshGSV();
     }
