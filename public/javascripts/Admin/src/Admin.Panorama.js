@@ -12,7 +12,6 @@ function AdminPanorama(svHolder) {
      * This function initializes the Panorama
      */
     function _init () {
-        console.log("Wrong pano");
         self.svHolder = $(svHolder);
         self.svHolder.addClass("admin-panorama");
 
