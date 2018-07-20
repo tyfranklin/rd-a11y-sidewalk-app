@@ -93,7 +93,7 @@ function AdminLabelSearch() {
                 '</div>'+
             '</div>');
 
-        self.panorama = AdminPanorama(self.modal.find("#svholder")[0]);
+        self.panorama = AdminPanoramaLabelSearch(self.modal.find("#svholder")[0]);
 
         self.modalTask = self.modal.find("#task");
         self.modalGSVPanoID = self.modal.find("#gsv-pano-id");
