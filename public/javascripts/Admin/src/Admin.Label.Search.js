@@ -113,16 +113,13 @@ function AdminLabelSearch() {
     function _handleData(labelMetadata) {
 
         self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
-        if (self.panorama) {
-            self.panorama.panorama.set('clickToGo', true);
-            self.panorama.panorama.set('zoomControl', true);
-        }
 
         self.panorama.setPov({
             heading: labelMetadata['heading'],
             pitch: labelMetadata['pitch'],
-            zoom: labelMetadata['zoom']
         });
+
+        self.panorama.setZoom(labelMetadata['zoom']);
 
         self.adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
             labelMetadata['canvas_x'], labelMetadata['canvas_y'],

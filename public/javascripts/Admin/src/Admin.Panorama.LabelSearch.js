@@ -12,9 +12,9 @@ function AdminPanoramaLabelSearch(svHolder) {
     };
 
     var zoomFactor = {
-        1: 1,
-        2: 2.1,
-        3: 4,
+        1: 1.6,
+        2: 2.6,
+        3: 3.6,
         4: 8,
         5: 16
     }
@@ -92,7 +92,6 @@ function AdminPanoramaLabelSearch(svHolder) {
         self.panoPov = {
             heading: null,
             pitch: null,
-            zoom: null
         };
 
         if (self.panorama) {
@@ -130,7 +129,7 @@ function AdminPanoramaLabelSearch(svHolder) {
      * @returns {*|{heading, pitch, zoom}}
      */
     function getPov () {
-        if ("panorama" in svl) {
+        if (self.panorama) {
             var pov = self.panorama.getPov();
 
             // Pov can be less than 0. So adjust it.
@@ -172,6 +171,7 @@ function AdminPanoramaLabelSearch(svHolder) {
             var dx = mouseStatus.currX - mouseStatus.prevX;
             var dy = mouseStatus.currY - mouseStatus.prevY;
             var pov = self.panorama.getPov();
+            /*
             var zoom = Math.round(pov.zoom);
             var zoomLevel = zoomFactor[zoom];
             dx = dx / (2 * zoomLevel);
@@ -180,6 +180,7 @@ function AdminPanoramaLabelSearch(svHolder) {
             dy *= 1.5;
             updatePov(dx, dy);
             clearCanvas();
+            */
             renderLabel();
         }
 
@@ -275,6 +276,17 @@ function AdminPanoramaLabelSearch(svHolder) {
     }
 
     /**
+     * Converts audit zoom level into GSV zoom and sets the zoom level of this panorama
+     * @param zoom  Zoom level (recorded from audit)
+     */
+    function setZoom(zoom) {
+        var gsvZoom = zoomFactor[zoom];
+        console.log('Zoom level: ' + gsvZoom);
+        self.panorama.setZoom(gsvZoom);
+        return self;
+    }
+
+    /**
      * Update POV of Street View as a user drags their mouse cursor.
      * @param dx
      * @param dy
@@ -283,11 +295,14 @@ function AdminPanoramaLabelSearch(svHolder) {
         if (self.panorama) {
             var pov = self.panorama.getPov(),
                 alpha = 0.5;
+
+            console.log(pov);
+
             pov.heading -= alpha * dx;
             pov.pitch += alpha * dy;
 
             // Set the property this object. Then update the Street View image
-            self.panorama.setPov(pov);
+            // self.panorama.setPov(pov);
         } else {
             throw self.className + ' updatePov(): panorama not defined!';
         }
@@ -300,6 +315,7 @@ function AdminPanoramaLabelSearch(svHolder) {
     self.changePanoId = changePanoId;
     self.clearCanvas = clearCanvas;
     self.setPov = setPov;
+    self.setZoom = setZoom;
     self.renderLabel = renderLabel;
     self.refreshGSV = refreshGSV;
     return self;
