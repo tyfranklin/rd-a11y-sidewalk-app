@@ -13,20 +13,19 @@ function AdminPanoramaLabelSearch(svHolder) {
     };
 
     var icons = {
-        CurbRamp : 'assets/javascripts/SVLabel/img/cursors/Cursor_CurbRamp.png',
-        NoCurbRamp : 'assets/javascripts/SVLabel/img/cursors/Cursor_NoCurbRamp.png',
-        Obstacle : 'assets/javascripts/SVLabel/img/cursors/Cursor_Obstacle.png',
-        SurfaceProblem : 'assets/javascripts/SVLabel/img/cursors/Cursor_SurfaceProblem.png',
-        Other : 'assets/javascripts/SVLabel/img/cursors/Cursor_Other.png',
-        Occlusion : 'assets/javascripts/SVLabel/img/cursors/Cursor_Other.png',
-        NoSidewalk : 'assets/javascripts/SVLabel/img/cursors/Cursor_NoSidewalk.png'
+        CurbRamp : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_CurbRamp.png',
+        NoCurbRamp : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_NoCurbRamp.png',
+        Obstacle : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_Obstacle.png',
+        SurfaceProblem : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_SurfaceProblem.png',
+        Other : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_Other.png',
+        Occlusion : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_Other.png',
+        NoSidewalk : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_NoSidewalk.png'
     }
 
     /**
      * This function initializes the Panorama
      */
     function _init () {
-        console.log("Correct pano");
         self.svHolder = $(svHolder);
         self.svHolder.addClass("admin-panorama");
 
@@ -81,9 +80,6 @@ function AdminPanoramaLabelSearch(svHolder) {
     function setPov(coords) {
         self.panorama.set('pov', {heading: coords['heading'], pitch: coords['pitch']});
         self.panorama.set('zoom', coords['zoom']);
-
-        // console.log('Panorama POV: ' + self.panorama.getPov().heading + ', ' + self.panorama.getPov().pitch);
-        // self.refreshGSV();
         return this;
     }
 
@@ -100,37 +96,13 @@ function AdminPanoramaLabelSearch(svHolder) {
      * @returns {renderLabel}
      */
     function renderLabel (label, labelCoords) {
-        console.log('rendering panomarker');
         var url = icons[label.label_type];
-        console.log(url);
-        // console.log('Lat: ' + labelCoords['lat'] + ', Lng: ' + labelCoords['lng']);
-        // console.log('Heading: ' + labelCoords['heading'] + ', Pitch: ' + labelCoords['pitch']);
-
-        // PanoMarker -- can't set latlng
-        /*
-        this.labelMarker = new PanoMarker({
-                pano: self.panorama,
-                position: {heading: labelCoords['heading'], pitch: labelCoords['pitch']},
-                container: self.panoCanvas,
-                size: new google.maps.Size(30,30),
-                icon: url
-            });
-        */
-
         this.labelMarker = new google.maps.Marker ({
             map: self.panorama,
             position: new google.maps.LatLng(labelCoords['lat'], labelCoords['lng']),
-            size: new google.maps.Size(15, 15),
             icon: url,
             draggable: true
         });
-
-
-        /*
-        console.log('Panorama POV: ' + self.panorama.getPov().heading + ', ' + self.panorama.getPov().pitch);
-        console.log('Panorama position: ' + self.panorama.getPosition());
-        console.log('Label: ' + labelMarker.getPosition().heading + ', ' + self.panorama.getPov().pitch);
-        */
         return this;
     }
 

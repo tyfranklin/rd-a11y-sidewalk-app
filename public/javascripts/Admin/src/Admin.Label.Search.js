@@ -105,11 +105,6 @@ function AdminLabelSearch() {
         self.modalDescription.html(labelMetadata['description'] != null ? labelMetadata['description'] : "No description");
         self.modalTemporary.html(labelMetadata['temporary'] ? "True": "False");
 
-
-        console.log('Panorama POV: ' + self.panorama.panorama.getPov().heading + ', ' + self.panorama.panorama.getPov().pitch);
-        console.log('Panorama position: ' + self.panorama.panorama.getPosition());
-        console.log('Label marker position: ' + self.panorama.labelMarker.getPosition().heading + ', ' + self.panorama.labelMarker.getPosition().pitch);
-
         self.panorama.refreshGSV();
     }
 
@@ -134,7 +129,6 @@ function AdminLabelSearch() {
      * Pull information from the Label information box when the submit button is clicked.
      */
     $('#submit').on('click', function (e) {
-        console.log('Submit button clicked');
         var labelId = $('#form-control-input').val();
         showLabel(labelId);
     });
