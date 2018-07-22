@@ -74,24 +74,20 @@ function AdminLabelSearch() {
      * @param labelMetadata     Data from a label's JSON file.
      */
     function _handleData(labelMetadata) {
-        var labelCoords = {
-            lat: labelMetadata['lat'],
-            lng: labelMetadata['lng'],
+        var label = {
+            label_type: labelMetadata['label_type_key'],
+            canvas_x: labelMetadata['canvas_x'],
+            canvas_y: labelMetadata['canvas_y'],
+            canvas_width: labelMetadata['canvas_width'],
+            canvas_height: labelMetadata['canvas_height'],
             heading: labelMetadata['heading'],
             pitch: labelMetadata['pitch'],
             zoom: labelMetadata['zoom']
         };
 
         self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
-        self.panorama.setLatLng(labelCoords);
-        self.panorama.setPov(labelCoords);
-
-        var adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
-            labelMetadata['canvas_x'], labelMetadata['canvas_y'],
-            labelMetadata['canvas_width'], labelMetadata['canvas_height']);
-
-
-        self.panorama.renderLabel(adminPanoramaLabel, labelCoords);
+        self.panorama.setPov(label);
+        self.panorama.renderLabel(label);
 
         var labelDate = moment(new Date(labelMetadata['timestamp']));
         self.modalTimestamp.html(labelDate.format('MMMM Do YYYY, h:mm:ss') + " (" + labelDate.fromNow() + ")");

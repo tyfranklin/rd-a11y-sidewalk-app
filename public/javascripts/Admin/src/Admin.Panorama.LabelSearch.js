@@ -20,7 +20,14 @@ function AdminPanoramaLabelSearch(svHolder) {
         Other : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_Other.png',
         Occlusion : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_Other.png',
         NoSidewalk : 'assets/javascripts/SVLabel/img/admin_label_tool/AdminTool_NoSidewalk.png'
-    }
+    };
+
+    // Adjust zoom level for GSV Panorama
+    var zoomLevel = {
+        1: 1.55,
+        2: 2.55,
+        3: 3.6
+    };
 
     /**
      * This function initializes the Panorama
@@ -79,36 +86,100 @@ function AdminPanoramaLabelSearch(svHolder) {
      */
     function setPov(coords) {
         self.panorama.set('pov', {heading: coords['heading'], pitch: coords['pitch']});
-        self.panorama.set('zoom', coords['zoom']);
-        return this;
-    }
-
-    function setLatLng(coords) {
-        self.panorama.set('position', new google.maps.LatLng(coords['lat'], coords['lng']));
-        // console.log('Panorama position: ' + self.panorama.getPosition());
-        // self.refreshGSV();
+        // self.panorama.set('zoom', coords['zoom']);
+        self.panorama.set('zoom', zoomLevel[coords['zoom']]);
         return this;
     }
 
     /**
-     *
+     * Renders a panomarker on canvas
      * @param label: instance of AdminPanoramaLabel
      * @returns {renderLabel}
      */
-    function renderLabel (label, labelCoords) {
-        var url = icons[label.label_type];
-        this.labelMarker = new google.maps.Marker ({
-            map: self.panorama,
-            position: new google.maps.LatLng(labelCoords['lat'], labelCoords['lng']),
+    function renderLabel (label) {
+        var url = icons[label['label_type']];
+        var pos = getPosition(label['canvas_x'], label['canvas_y'], label['canvas_width'],
+            label['canvas_height'], label['zoom'], label['heading'], label['pitch']);
+
+        this.labelMarker = new PanoMarker ({
+            container: self.panoCanvas,
+            pano: self.panorama,
+            // position: new google.maps.LatLng(labelCoords['lat'], labelCoords['lng']),
+            position: {heading: pos.heading, pitch: pos.pitch},
             icon: url,
-            draggable: true
+            size: new google.maps.Size(20, 20),
+            anchor: new google.maps.Point(10, 10)
         });
         return this;
     }
 
+    /**
+     * Calculates heading and pitch for a Google Maps marker using (x, y) coordinates
+     * @param canvas_x          X coordinate (pixel) for label
+     * @param canvas_y          Y coordinate (pixel) for label
+     * @param canvas_width      Original canvas width
+     * @param canvas_height     Original canvas height
+     * @param zoom              Original zoom level of label
+     * @param heading           Original heading of label
+     * @param pitch             Original pitch of label
+     * @returns {{heading: number, pitch: number}}
+     */
+    function getPosition(canvas_x, canvas_y, canvas_width, canvas_height, zoom, heading, pitch) {
+        function sgn(x) {
+            return x >= 0 ? 1 : -1;
+        }
+
+        var PI = Math.PI;
+        var cos = Math.cos;
+        var sin = Math.sin;
+        var tan = Math.tan;
+        var sqrt = Math.sqrt;
+        var atan2 = Math.atan2;
+        var asin = Math.asin;
+        var fov = get3dFov(zoom) * PI / 180.0;
+        var width = canvas_width;
+        var height = canvas_height;
+        var h0 = heading * PI / 180.0;
+        var p0 = pitch * PI / 180.0;
+        var f = 0.5 * width / tan(0.5 * fov);
+        var x0 = f * cos(p0) * sin(h0);
+        var y0 = f * cos(p0) * cos(h0);
+        var z0 = f * sin(p0);
+        var du = (canvas_x) - width / 2;
+        var dv = height / 2 - (canvas_y - 5);
+        var ux = sgn(cos(p0)) * cos(h0);
+        var uy = -sgn(cos(p0)) * sin(h0);
+        var uz = 0;
+        var vx = -sin(p0) * sin(h0);
+        var vy = -sin(p0) * cos(h0);
+        var vz = cos(p0);
+        var x = x0 + du * ux + dv * vx;
+        var y = y0 + du * uy + dv * vy;
+        var z = z0 + du * uz + dv * vz;
+        var R = sqrt(x * x + y * y + z * z);
+        var h = atan2(x, y);
+        var p = asin(z / R);
+        return {
+            heading: h * 180.0 / PI,
+            pitch: p * 180.0 / PI
+        };
+    }
+
+    /**
+     * From panomarker spec
+     * @param zoom
+     * @returns {number}
+     */
+    function get3dFov (zoom) {
+        return zoom <= 2 ?
+            126.5 - zoom * 36.75 :  // linear descent
+            195.93 / Math.pow(1.92, zoom); // parameters determined experimentally
+    }
+
+
     /*
-    Sometimes strangely the GSV is not shown, calling this function might fix it
-    related:http://stackoverflow.com/questions/18426083/how-do-i-force-redraw-with-google-maps-api-v3-0
+     * Sometimes strangely the GSV is not shown, calling this function might fix it
+     * related:http://stackoverflow.com/questions/18426083/how-do-i-force-redraw-with-google-maps-api-v3-0
      */
     function refreshGSV() {
         if (typeof google != "undefined")
@@ -121,7 +192,6 @@ function AdminPanoramaLabelSearch(svHolder) {
     self.changePanoId = changePanoId;
     self.setPov = setPov;
     self.renderLabel = renderLabel;
-    self.setLatLng = setLatLng;
     self.refreshGSV = refreshGSV;
     return self;
 }
