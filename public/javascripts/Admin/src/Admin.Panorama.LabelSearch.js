@@ -59,7 +59,7 @@ function AdminPanoramaLabelSearch(svHolder) {
             self.panorama.set('linksControl', false);
             self.panorama.set('navigationControl', false);
             self.panorama.set('panControl', false);
-            self.panorama.set('zoomControl', true);
+            self.panorama.set('zoomControl', false);
             self.panorama.set('keyboardShortcuts', false);
             self.panorama.set('motionTracking', false);
             self.panorama.set('motionTrackingControl', false);
@@ -101,7 +101,7 @@ function AdminPanoramaLabelSearch(svHolder) {
         var pos = getPosition(label['canvas_x'], label['canvas_y'], label['canvas_width'],
             label['canvas_height'], label['zoom'], label['heading'], label['pitch']);
 
-        this.labelMarker = new PanoMarker ({
+        self.labelMarker = new PanoMarker ({
             container: self.panoCanvas,
             pano: self.panorama,
             // position: new google.maps.LatLng(labelCoords['lat'], labelCoords['lng']),
@@ -110,6 +110,11 @@ function AdminPanoramaLabelSearch(svHolder) {
             size: new google.maps.Size(20, 20),
             anchor: new google.maps.Point(10, 10)
         });
+
+        google.maps.event.addListener(self.labelMarker, 'click', function() {
+            self.labelMarker.setVisible(false);
+        });
+
         return this;
     }
 
