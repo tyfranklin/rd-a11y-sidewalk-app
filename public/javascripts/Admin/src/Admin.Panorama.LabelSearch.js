@@ -54,7 +54,7 @@ function AdminPanoramaLabelSearch(svHolder) {
 
         if (self.panorama) {
             self.panorama.set('addressControl', false);
-            self.panorama.set('clickToGo', false);
+            self.panorama.set('clickToGo', true);
             self.panorama.set('disableDefaultUI', true);
             self.panorama.set('linksControl', false);
             self.panorama.set('navigationControl', false);
@@ -65,7 +65,7 @@ function AdminPanoramaLabelSearch(svHolder) {
             self.panorama.set('motionTrackingControl', false);
             self.panorama.set('showRoadLabels', false);
         }
-
+        
         return this;
     }
 
