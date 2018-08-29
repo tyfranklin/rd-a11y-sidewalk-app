@@ -74,20 +74,14 @@ function AdminLabelSearch() {
      * @param labelMetadata     Data from a label's JSON file.
      */
     function _handleData(labelMetadata) {
-        var label = {
-            label_type: labelMetadata['label_type_key'],
-            canvas_x: labelMetadata['canvas_x'],
-            canvas_y: labelMetadata['canvas_y'],
-            canvas_width: labelMetadata['canvas_width'],
-            canvas_height: labelMetadata['canvas_height'],
-            heading: labelMetadata['heading'],
-            pitch: labelMetadata['pitch'],
-            zoom: labelMetadata['zoom']
-        };
+        self.panorama.setPano(labelMetadata['gsv_panorama_id'], labelMetadata['heading'],
+            labelMetadata['pitch'], labelMetadata['zoom']);
 
-        self.panorama.changePanoId(labelMetadata['gsv_panorama_id']);
-        self.panorama.setPov(label);
-        self.panorama.renderLabel(label);
+        var adminPanoramaLabel = AdminPanoramaLabel(labelMetadata['label_type_key'],
+            labelMetadata['canvas_x'], labelMetadata['canvas_y'],
+            labelMetadata['canvas_width'], labelMetadata['canvas_height'], labelMetadata['heading'],
+            labelMetadata['pitch'], labelMetadata['zoom']);
+        self.panorama.setLabel(adminPanoramaLabel);
 
         var labelDate = moment(new Date(labelMetadata['timestamp']));
         self.modalTimestamp.html(labelDate.format('MMMM Do YYYY, h:mm:ss') + " (" + labelDate.fromNow() + ")");
@@ -100,8 +94,6 @@ function AdminLabelSearch() {
         self.modalSeverity.html(labelMetadata['severity'] != null ? labelMetadata['severity'] : "No severity");
         self.modalDescription.html(labelMetadata['description'] != null ? labelMetadata['description'] : "No description");
         self.modalTemporary.html(labelMetadata['temporary'] ? "True": "False");
-
-        self.panorama.refreshGSV();
     }
 
     /**
