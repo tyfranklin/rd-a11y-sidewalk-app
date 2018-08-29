@@ -24,9 +24,9 @@ function AdminPanoramaLabelSearch(svHolder) {
 
     // Adjust zoom level for GSV Panorama
     var zoomLevel = {
-        1: 1.55,
-        2: 2.55,
-        3: 3.6
+        1: 1,
+        2: 1.95,
+        3: 2.95
     };
 
     /**
