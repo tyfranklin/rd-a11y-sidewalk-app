@@ -65,6 +65,17 @@ function AdminPanoramaLabelSearch(svHolder) {
             self.panorama.set('motionTrackingControl', false);
             self.panorama.set('showRoadLabels', false);
         }
+
+        self.panorama.addListener('pano_changed', function() {
+            if (self.labelMarker) {
+                var currentPano = self.panorama.getPano();
+                if (currentPano === self.panoId) {
+                    self.labelMarker.setVisible(true);
+                } else {
+                    self.labelMarker.setVisible(false);
+                }
+            }
+        });
         
         return this;
     }
@@ -121,6 +132,11 @@ function AdminPanoramaLabelSearch(svHolder) {
             size: new google.maps.Size(20, 20),
             anchor: new google.maps.Point(10, 10)
         });
+
+        google.maps.event.addListener(self.labelMarker, 'click', function() {
+            self.labelMarker.setVisible(false);
+        });
+
         return this;
     }
 
