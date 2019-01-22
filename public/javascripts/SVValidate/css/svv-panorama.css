@@ -23,3 +23,13 @@
     height: 450px;
     width: 730px;
 }
+
+/* Custom css for panomarker */
+#panomarker {
+    opacity: 1;
+}
+
+/* Hide panomarker when user mouses over */
+#panomarker:hover {
+    opacity: 0;
+}

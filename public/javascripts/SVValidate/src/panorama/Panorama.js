@@ -182,23 +182,35 @@ function Panorama (label) {
         var url = currentLabel.getIconUrl();
         var pos = currentLabel.getPosition();
 
-        if (!self.labelMarker) {
-            self.labelMarker = new PanoMarker({
-                container: panoCanvas,
-                pano: panorama,
-                position: {heading: pos.heading, pitch: pos.pitch},
-                icon: url,
-                size: new google.maps.Size(currentLabel.getRadius() * 2, currentLabel.getRadius() * 2),
-                anchor: new google.maps.Point(currentLabel.getRadius(), currentLabel.getRadius())
-            });
-        } else {
-            self.labelMarker.setPano(panorama, panoCanvas);
-            self.labelMarker.setPosition({
-                heading: pos.heading,
-                pitch: pos.pitch
-            });
-            self.labelMarker.setIcon(url);
+        var timeout = (self.labelMarker) ? 1000 : 3200;
+
+        function addPanomarker() {
+            if (self.labelMarker) {
+                self.labelMarker.setPano(panorama, panoCanvas);
+                self.labelMarker.setPosition({
+                    heading: pos.heading,
+                    pitch: pos.pitch
+                });
+                self.labelMarker.setIcon(url);
+                self.labelMarker.setClassName('panomarker');
+                self.labelMarker.setId('panomarker');
+            } else {
+                self.labelMarker = new PanoMarker({
+                    container: panoCanvas,
+                    pano: panorama,
+                    position: {heading: pos.heading, pitch: pos.pitch},
+                    icon: url,
+                    size: new google.maps.Size(currentLabel.getRadius() * 2, currentLabel.getRadius() * 2),
+                    anchor: new google.maps.Point(currentLabel.getRadius(), currentLabel.getRadius())
+                });
+                self.labelMarker.setClassName('panomarker');
+                self.labelMarker.setId('panomarker');
+            }
         }
+        // callback time experimentally determined; seems like we need to account for time to
+        // load the panorama too.
+        setTimeout(addPanomarker, timeout);
+
         return this;
     }
 
@@ -230,7 +242,6 @@ function Panorama (label) {
                 panorama.setPano(panoId);
                 panorama.set('pov', {heading: heading, pitch: pitch});
                 panorama.set('zoom', zoomLevel[zoom]);
-                renderLabel();
             }
             setTimeout(changePano, 300);
         }
