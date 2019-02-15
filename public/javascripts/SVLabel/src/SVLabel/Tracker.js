@@ -150,6 +150,7 @@ function Tracker () {
         try {
             panoId = svl.map.getPanoId();
         } catch (err) {
+            console.log("panoId set to null, err = ", err);
             panoId = null;
         }
 
