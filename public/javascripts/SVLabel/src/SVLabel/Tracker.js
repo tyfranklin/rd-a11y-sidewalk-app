@@ -155,7 +155,9 @@ function Tracker () {
         }
 
         var timestamp = new Date().getTime();
-
+        if(panoId == null) {
+            console.log("   @ was null");
+        }
         return {
             action : action,
             gsv_panorama_id: panoId,
