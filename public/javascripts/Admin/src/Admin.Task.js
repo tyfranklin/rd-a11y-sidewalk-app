@@ -158,13 +158,7 @@ function AdminTask(params) {
                         if(!self.panorama)
                             self.panorama = AdminPanorama($("#svholder")[0]);
 
-                        self.panorama.changePanoId(d.properties.panoId);
-
-                        self.panorama.setPov({
-                            heading: d.properties.heading,
-                            pitch: d.properties.pitch,
-                            zoom: d.properties.zoom
-                        });
+                        self.panorama.setPano(d.properties.panoId, d.properties.heading, d.properties.pitch, d.properties.zoom);
 
                         self.showEvent(d.properties);
 
