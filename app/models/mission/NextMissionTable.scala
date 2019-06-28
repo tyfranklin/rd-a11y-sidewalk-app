@@ -1,19 +1,24 @@
 package models.mission
 
+import models.daos.slick.DBTableDefinitions.{DBUser, UserTable}
 import models.utils.MyPostgresDriver.simple._
 import play.api.Play.current
 
 import scala.slick.lifted.ForeignKeyQuery
 
-case class NextMission(nextMissionId: Int, missionTypeId: Int, missionsRemaining: Int)
+case class NextMission(nextMissionId: Int, userId: String, missionTypeId: Int, missionsRemaining: Int)
 
 
 class NextMissionTable(tag: slick.lifted.Tag) extends Table[NextMission](tag, Some("sidewalk"), "next_mission") {
   def nextMissionId: Column[Int] = column[Int]("next_mission_id", O.PrimaryKey, O.AutoInc)
+  def userId: Column[String] = column[String]("user_id", O.NotNull)
   def missionTypeId: Column[Int] = column[Int]("mission_type_id", O.NotNull)
   def missionsRemaining: Column[Int] = column[Int]("missions_remaining", O.NotNull)
 
-  def * = (nextMissionId, missionTypeId, missionsRemaining) <> ((NextMission.apply _).tupled, NextMission.unapply)
+  def * = (nextMissionId, userId, missionTypeId, missionsRemaining) <> ((NextMission.apply _).tupled, NextMission.unapply)
+
+  def user: ForeignKeyQuery[UserTable, DBUser] =
+    foreignKey("next_mission_user_id_fkey", userId, TableQuery[UserTable])(_.userId)
 
   def missionType: ForeignKeyQuery[MissionTypeTable, MissionType] =
     foreignKey("next_mission_mission_type_id_fkey", missionTypeId, TableQuery[MissionTypeTable])(_.missionTypeId)
