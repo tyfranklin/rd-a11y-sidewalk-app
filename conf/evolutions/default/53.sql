@@ -10,5 +10,8 @@ CREATE TABLE next_mission
     FOREIGN KEY (mission_type_id) REFERENCES mission_type(mission_type_id)
 );
 
+INSERT INTO next_mission (user_id, mission_type_id, missions_remaining)
+SELECT user_id, 2, 2 FROM sidewalk_user;
+
 # --- !Downs
 DROP TABLE next_mission;
