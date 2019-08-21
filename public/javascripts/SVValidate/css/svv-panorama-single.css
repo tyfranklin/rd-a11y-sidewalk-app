@@ -47,7 +47,7 @@
  * Maps Service Specific Terms. Customer will not modify, obscure, or delete such attribution.
  */
 
-/*
+
 a[href^="http://maps.google.com/maps"]{display:none !important}
 a[href^="https://maps.google.com/maps"]{display:none !important}
 
@@ -57,4 +57,4 @@ a[href^="https://maps.google.com/maps"]{display:none !important}
 .gmnoprint div {
     background:none !important;
 }
-*/
+

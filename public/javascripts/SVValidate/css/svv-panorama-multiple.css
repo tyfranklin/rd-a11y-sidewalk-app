@@ -12,18 +12,98 @@
 }
 
 .small-panorama {
-    height: 140px;
+    height: 170px;
     width: 240px;
     display: inline-block;
 }
 
 .svv-small-panorama-date-holder {
     position: absolute;
-    bottom: 20px;
-    left: 8px;
+    top: 5px;
+    left: 3px;
     z-index: 2;
     font-family: sans-serif;
     font-size: 12px;
     text-shadow: 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.5);
     color: white;
 }
+
+#validation-button-holder {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 6px;
+    display: flex;
+    opacity: 0;
+    z-index: 2;
+    transition: opacity .35s ease;
+    justify-content: space-around;
+}
+
+.rapid-validate-overlay-button {
+    width: 60px;
+    height: 25px;
+    border: solid 2px white;
+    border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color:rgba(211, 211, 211, 0.3);
+}
+
+.validation-status-icon-small {
+    height: 12px;
+    margin: auto;
+}
+
+#svv-panorama-0:hover .validation-holder-small-0 {
+    opacity: 1;
+}
+#svv-panorama-1:hover .validation-holder-small-1 {
+    opacity: 1;
+}
+#svv-panorama-2:hover .validation-holder-small-2 {
+    opacity: 1;
+}
+#svv-panorama-3:hover .validation-holder-small-3 {
+    opacity: 1;
+}
+#svv-panorama-4:hover .validation-holder-small-4 {
+    opacity: 1;
+}
+#svv-panorama-5:hover .validation-holder-small-5 {
+    opacity: 1;
+}
+#svv-panorama-6:hover .validation-holder-small-6 {
+    opacity: 1;
+}
+#svv-panorama-7:hover .validation-holder-small-7 {
+    opacity: 1;
+}
+#svv-panorama-8:hover .validation-holder-small-8 {
+    opacity: 1;
+}
+
+.rapid-validate-overlay-button:hover {
+    cursor:pointer;
+    background-color:rgba(255, 255, 255, 0.9);
+}
+
+.svv-panorama-cover {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transition: opacity .35s ease;
+    background: lightgray;
+    z-index: 3;
+}
+
+.svv-panorama-cover-icon {
+    height: 150px;
+}
+    
+
+
