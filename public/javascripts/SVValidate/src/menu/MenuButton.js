@@ -15,16 +15,46 @@ function MenuButton(id) {
     self.notSureButton = $("#" + notSureButtonId);
 
     self.agreeButton.click(function() {
+        coverUp("assets/javascripts/SVValidate/img/Checkmark.png");
         validateLabel("Agree");
     });
 
     self.disagreeButton.click(function() {
+        coverUp("assets/javascripts/SVValidate/img/Cross.png");
         validateLabel("Disagree");
     });
 
     self.notSureButton.click(function() {
+        coverUp("assets/javascripts/SVValidate/img/QuestionMark.png");
         validateLabel("NotSure");
     });
+
+    function coverUp (iconSource) {
+        var cover = $("#svv-panorama-cover-" + id);
+        var coverIcon = $("#svv-panorama-cover-icon-" + id);
+        coverIcon.attr("src", iconSource);
+        cover.css("display", "flex");
+
+        var i ;
+        for (i = 0; i < 9; i++) {
+            let coverID = "#svv-panorama-cover-" + i;
+            if ($(coverID).css('display') == 'none') {
+                break;
+            }
+        }
+
+        if (i == 9) {
+            uncover();
+        }
+    }
+
+    function uncover () {
+        var i;
+        for (i = 0; i < 9; i++) {
+            let coverStr = "#svv-panorama-cover-" + i;
+            $(coverStr).fadeOut();
+        }
+    }
 
     /**
      * Validates a single label from a button click.
