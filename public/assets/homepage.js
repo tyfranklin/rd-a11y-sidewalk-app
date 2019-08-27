@@ -270,3 +270,11 @@ function isElementVerticallyVisible(el) {
 
     return (rect.top <= windowHeight) && ((rect.top + rect.height) >= 0);
 }
+
+
+function scrollDownDisplayContent() {
+    $("html, body").animate(
+        { scrollTop: $("#content").offset().top },
+        2000
+    );
+}
